@@ -663,8 +663,10 @@ html(lang="id" class="scroll-smooth")
         });
       });
 
-    script(src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js")
+    // Optimized JavaScript loading with proper defer/async attributes
+    script(defer src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js")
     
+    // AdSense optimization
     if adsenseEnabled
       script(async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-xxxxxxxxxx" crossorigin="anonymous")
       script.

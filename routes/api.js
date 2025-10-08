@@ -11,6 +11,27 @@ router.get('/health', async (req, res) => {
   }
 });
 
+router.get('/anime/status', async (req, res) => {
+  try {
+    const status = await animeApi.checkConnectivity();
+    res.json({
+      ok: true,
+      status: 'operational',
+      api: status,
+      timestamp: new Date().toISOString(),
+      version: '1.0.0'
+    });
+  } catch (error) {
+    console.error('API status check error:', error);
+    res.status(500).json({
+      ok: false,
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 router.get('/anime/:slug', async (req, res) => {
   try {
     const slug = req.params.slug;

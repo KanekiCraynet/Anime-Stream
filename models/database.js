@@ -1153,8 +1153,24 @@ const dbHelpers = {
   }
 };
 
+// Function to check if database is fully initialized
+const isDatabaseReady = () => {
+  return dbReady && dbInitialized && db;
+};
+
+// Function to wait for database to be ready
+const waitForDatabase = async (maxWaitTime = 5000) => {
+  const startTime = Date.now();
+  while (!isDatabaseReady() && (Date.now() - startTime) < maxWaitTime) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  return isDatabaseReady();
+};
+
 module.exports = {
   db,
   initializeDatabase,
+  isDatabaseReady,
+  waitForDatabase,
   ...dbHelpers
 };

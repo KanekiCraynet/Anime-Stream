@@ -11,8 +11,6 @@ function requireLogin(req, res, next) {
   next();
 }
 
-/*
-// Disabled for Vercel compatibility
 // Use /tmp directory in Vercel environment, otherwise use public/uploads/avatars
 const isVercel = process.env.VERCEL === '1';
 const uploadDir = isVercel 

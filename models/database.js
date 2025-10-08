@@ -25,6 +25,7 @@ if (isVercel) {
 // Create database connection with proper error handling
 let db;
 let dbReady = false;
+let dbInitialized = false;
 
 const createDatabaseConnection = () => {
   return new Promise((resolve, reject) => {
@@ -65,14 +66,17 @@ createDatabaseConnection()
     // Initialize tables after connection is established
     try {
       await initializeDatabase();
+      dbInitialized = true;
       console.log('Database and tables initialized successfully');
     } catch (err) {
       console.error('Failed to initialize database tables:', err);
+      dbInitialized = false;
     }
   })
   .catch(err => {
     console.error('Failed to create database connection:', err);
     dbReady = false;
+    dbInitialized = false;
   });
 
 // Connection pool simulation for better performance

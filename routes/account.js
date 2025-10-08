@@ -1,8 +1,8 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const { getUserById, updateUserProfile, updateUserPassword, setUserAvatar, getBookmarksByUser, getWatchHistory } = require('../models/database');
+// const multer = require('multer'); // Disabled for Vercel compatibility
+// const path = require('path'); // Disabled for Vercel compatibility
+// const fs = require('fs'); // Disabled for Vercel compatibility
+const { getUserById, updateUserProfile, updateUserPassword, /* setUserAvatar, */ getBookmarksByUser, getWatchHistory } = require('../models/database');
 
 const router = express.Router();
 
@@ -11,8 +11,24 @@ function requireLogin(req, res, next) {
   next();
 }
 
-const uploadDir = path.join(__dirname, '..', 'public', 'uploads', 'avatars');
-fs.mkdirSync(uploadDir, { recursive: true });
+/*
+// Disabled for Vercel compatibility
+// Use /tmp directory in Vercel environment, otherwise use public/uploads/avatars
+const isVercel = process.env.VERCEL === '1';
+const uploadDir = isVercel 
+  ? path.join('/tmp', 'uploads', 'avatars')
+  : path.join(__dirname, '..', 'public', 'uploads', 'avatars');
+
+// Create directory with error handling
+try {
+  fs.mkdirSync(uploadDir, { recursive: true });
+} catch (error) {
+  console.error('Failed to create upload directory:', error);
+  // In Vercel, we'll handle this gracefully by using a fallback
+  if (isVercel) {
+    console.log('Using /tmp as fallback for uploads in Vercel environment');
+  }
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
@@ -32,6 +48,7 @@ const upload = multer({
     cb(null, allowed.includes(ext));
   }
 });
+*/
 
 router.get('/', requireLogin, async (req, res) => {
   try {
@@ -101,6 +118,8 @@ router.post('/password', requireLogin, async (req, res) => {
   }
 });
 
+/*
+// Disabled for Vercel compatibility
 router.post('/avatar', requireLogin, upload.single('avatar'), async (req, res) => {
   try {
     const relPath = `/uploads/avatars/${req.file.filename}`;
@@ -110,11 +129,10 @@ router.post('/avatar', requireLogin, upload.single('avatar'), async (req, res) =
     res.redirect('/account?error=avatar_failed');
   }
 });
+*/
 
 router.get('/test', (req, res) => {
   res.send('Account test route is working');
 });
 
 module.exports = router;
-
-

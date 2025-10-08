@@ -50,7 +50,7 @@ block content
                  a(href=`/anime/${anime.slug}` class="block")
                    div(class="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl dark:shadow-gray-900/50 overflow-hidden transform transition-all duration-500 hover:scale-105 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50")
                      div(class="relative overflow-hidden")
-                       img(src=anime.poster alt=anime.title class="w-full h-64 md:h-72 object-cover transition-transform duration-700 group-hover:scale-110" onerror="this.onerror=null;this.src='https://placehold.co/400x600?text=No+Image';")
+                       img(src=anime.poster alt=anime.title class="w-full h-64 md:h-72 object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/400x600?text=No+Image';")
                        div(class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500")
                        
                        // Episode Badge
@@ -94,7 +94,7 @@ block content
                   a(href=`/anime/${anime.slug}` class="block")
                     div(class="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl dark:shadow-gray-900/50 overflow-hidden transform transition-all duration-500 hover:scale-105 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50")
                       div(class="relative overflow-hidden")
-                        img(src=anime.poster alt=anime.title class="w-full h-64 md:h-72 object-cover transition-transform duration-700 group-hover:scale-110" onerror="this.onerror=null;this.src='https://placehold.co/400x600?text=No+Image';")
+                        img(src=anime.poster alt=anime.title class="w-full h-64 md:h-72 object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/400x600?text=No+Image';")
                         div(class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500")
                         
                         // Complete Badge

@@ -11,9 +11,9 @@ class AnimeApiService {
     this.cache = new Map();
     this.cacheTimeout = 3 * 60 * 1000; // 3 minutes cache (reduced)
     this.maxCacheSize = 50; // Maximum number of cached items (reduced)
-    this.retryAttempts = 2; // Reduced from 3
-    this.retryDelay = 500; // 0.5 second (reduced from 1 second)
-    this.requestTimeout = 8000; // 8 seconds (reduced from 15)
+    this.retryAttempts = 1; // Reduced from 2
+    this.retryDelay = 300; // 0.3 second (reduced from 0.5 second)
+    this.requestTimeout = 5000; // 5 seconds (reduced from 8)
     this.circuitBreakerThreshold = 3; // failures before circuit opens (reduced from 5)
     this.circuitBreakerTimeout = 30000; // 30 seconds (reduced from 1 minute)
     this.circuitBreakerState = 'CLOSED'; // CLOSED, OPEN, HALF_OPEN

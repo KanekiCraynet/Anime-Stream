@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
   try {
     // Set cache headers for better performance
     res.set({
-      'Cache-Control': 'public, max-age=180', // 3 minutes cache
+      'Cache-Control': 'public, max-age=300', // 5 minutes cache
       'ETag': `home-${Date.now()}`
     });
 
@@ -50,18 +50,28 @@ router.get('/', async (req, res) => {
       console.log('Cache miss for home data, fetching from API');
       homeData = await animeApi.getHomeData();
       
-      // Cache the result for 5 minutes
+      // Cache the result for 10 minutes
       if (homeData) {
-        await cacheService.set(cacheKey, homeData, 300, 'api');
+        await cacheService.set(cacheKey, homeData, 600, 'api');
       }
     }
 
-    const siteTitle = await getSetting('site_title') || 'KitaNime - Streaming Anime Subtitle Indonesia';
-    const siteDescription = await getSetting('site_description') || 'Nonton anime subtitle Indonesia terlengkap dan terbaru';
+    // Get settings with fallback to reduce database calls
+    let siteTitle, siteDescription;
+    try {
+      [siteTitle, siteDescription] = await Promise.all([
+        getSetting('site_title'),
+        getSetting('site_description')
+      ]);
+    } catch (dbError) {
+      console.log('Using fallback settings due to database error:', dbError.message);
+      siteTitle = 'KitaNime - Streaming Anime Subtitle Indonesia';
+      siteDescription = 'Nonton anime subtitle Indonesia terlengkap dan terbaru';
+    }
     
     res.render('index', {
-      title: siteTitle,
-      description: siteDescription,
+      title: siteTitle || 'KitaNime - Streaming Anime Subtitle Indonesia',
+      description: siteDescription || 'Nonton anime subtitle Indonesia terlengkap dan terbaru',
       ongoingAnime: homeData?.ongoing_anime || [],
       completeAnime: homeData?.complete_anime || [],
       currentPage: 'home'

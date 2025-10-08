@@ -75,7 +75,14 @@ let dbInitialized = false;
 const initDatabase = async () => {
   if (!dbInitialized) {
     try {
-      await initializeDatabase();
+      // Wait for database to be ready
+      const { waitForDatabase } = require('./models/database');
+      const dbReady = await waitForDatabase(10000); // Wait up to 10 seconds
+      
+      if (!dbReady) {
+        throw new Error('Database failed to initialize within timeout');
+      }
+      
       console.log('Database initialized successfully');
       dbInitialized = true;
     } catch (error) {

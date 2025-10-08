@@ -19,6 +19,7 @@ const authRoutes = require('./routes/auth');
 const bookmarkRoutes = require('./routes/bookmarks');
 const commentRoutes = require('./routes/comments');
 const watchHistoryRoutes = require('./routes/watch-history');
+const analyticsRoutes = require('./routes/analytics');
 
 const cookieConsent = require('./middleware/cookieConsent');
 const adSlots = require('./middleware/adSlots');
@@ -200,6 +201,7 @@ app.use('/auth', authRoutes);
 app.use('/bookmarks', bookmarkRoutes);
 app.use('/comments', commentRoutes);
 app.use('/watch-history', watchHistoryRoutes);
+app.use('/analytics', analyticsRoutes);
 
 // File upload error handling
 app.use(fileUploadErrorHandler);

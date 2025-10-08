@@ -196,8 +196,9 @@ app.use(express.static(path.join(__dirname, 'public'), {
   }
 }));
 
-app.use(cookieConsent);
-app.use(adSlots);
+// Middleware that depends on database - will be set up after database initialization
+// app.use(cookieConsent);
+// app.use(adSlots);
 app.use(analyticsMiddleware);
 
 // Apply rate limiting to specific routes

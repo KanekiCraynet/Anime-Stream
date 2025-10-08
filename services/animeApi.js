@@ -67,10 +67,10 @@ class AnimeApiService {
       // For production, try database first
       if (process.env.VERCEL === '1') {
         try {
-          const dbUrl = await getActiveApiEndpoint();
-          if (dbUrl && typeof dbUrl === 'string') {
-            return dbUrl.replace(/\/$/, '');
-          }
+      const dbUrl = await getActiveApiEndpoint();
+      if (dbUrl && typeof dbUrl === 'string') {
+        return dbUrl.replace(/\/$/, '');
+      }
         } catch (dbError) {
           console.log('Database not available, using environment fallback');
         }
@@ -91,12 +91,12 @@ class AnimeApiService {
       // Production default
       return process.env.VERCEL === '1' 
         ? 'https://anime-stream-delta.vercel.app/v1'
-        : 'http://localhost:3000/v1';
+        : 'https://anime-stream-delta.vercel.app/v1';
     } catch (error) {
       console.error('Error getting API base URL:', error);
       return process.env.VERCEL === '1' 
         ? 'https://anime-stream-delta.vercel.app/v1'
-        : 'http://localhost:3000/v1';
+        : 'https://anime-stream-delta.vercel.app/v1';
     }
   }
 

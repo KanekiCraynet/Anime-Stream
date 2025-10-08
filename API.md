@@ -4,8 +4,8 @@ API documentation untuk KitaNime Anime Streaming Platform. API ini menyediakan a
 
 ## 🌐 Base URL
 
-- **Development**: `http://localhost:3000/v1`
-- **Production**: `https://yourdomain.com/v1`
+- **Development**: `https://anime-stream-delta.vercel.app/v1`
+- **Production**: `https://anime-stream-delta.vercel.app/v1`
 
 ## 🔑 Authentication
 
@@ -511,7 +511,7 @@ GET /v1/batch/{slug}
 const axios = require('axios');
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/v1'
+  baseURL: 'https://anime-stream-delta.vercel.app/v1'
 });
 
 // Get home data
@@ -530,7 +530,7 @@ const animeDetail = await api.get('/anime/one-piece');
 ```python
 import requests
 
-base_url = 'http://localhost:3000/v1'
+base_url = 'https://anime-stream-delta.vercel.app/v1'
 
 # Get home data
 response = requests.get(f'{base_url}/home')
@@ -547,13 +547,13 @@ search_results = response.json()
 ### cURL
 ```bash
 # Get home data
-curl -X GET "http://localhost:3000/v1/home"
+curl -X GET "https://anime-stream-delta.vercel.app/v1/home"
 
 # Search anime
-curl -X GET "http://localhost:3000/v1/search?keyword=naruto&page=1"
+curl -X GET "https://anime-stream-delta.vercel.app/v1/search?keyword=naruto&page=1"
 
 # Get anime detail
-curl -X GET "http://localhost:3000/v1/anime/one-piece"
+curl -X GET "https://anime-stream-delta.vercel.app/v1/anime/one-piece"
 ```
 
 ## 📝 Notes

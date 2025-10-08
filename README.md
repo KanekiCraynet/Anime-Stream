@@ -110,8 +110,8 @@ npm run dev
 ```
 
 5. **Access Application**
-- Main App: http://localhost:3001
-- API Service: http://localhost:3000
+- Main App: https://anime-stream-delta.vercel.app
+- API Service: https://anime-stream-delta.vercel.app/v1
 
 ## ⚙️ Konfigurasi
 
@@ -124,8 +124,8 @@ NODE_ENV=development
 PORT=3001
 TRUST_PROXY=0
 SESSION_SECRET=your-strong-secret-key
-API_BASE_URL=http://localhost:3000/v1
-CORS_ORIGIN=*
+API_BASE_URL=https://anime-stream-delta.vercel.app/v1
+CORS_ORIGIN=https://anime-stream-delta.vercel.app
 ```
 
 ### Database Configuration
@@ -135,8 +135,8 @@ Aplikasi menggunakan SQLite database yang akan dibuat otomatis saat pertama kali
 ## 📚 API Documentation
 
 ### Base URL
-- Development: `http://localhost:3000/v1`
-- Production: `https://yourdomain.com/v1`
+- Development: `https://anime-stream-delta.vercel.app/v1`
+- Production: `https://anime-stream-delta.vercel.app/v1`
 
 ### Endpoints
 

@@ -443,7 +443,7 @@ async function insertDefaultData() {
 
       if (row.count === 0) {
         db.run(`INSERT INTO api_endpoints (name, url, is_active) VALUES
-          ('Default API', 'http://localhost:3000/v1', 1)`, (err) => {
+          ('Default API', 'https://anime-stream-delta.vercel.app/v1', 1)`, (err) => {
           if (err) {
             console.error('Error inserting default API endpoint:', err);
             handleError(err);

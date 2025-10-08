@@ -10,7 +10,7 @@ async function resolveUpstreamBaseUrl() {
   if (explicit && explicit.startsWith('http')) return explicit.replace(/\/$/, '');
   const dbUrl = await getActiveApiEndpoint();
   if (dbUrl && dbUrl.startsWith('http')) return dbUrl.replace(/\/$/, '');
-  return 'http://localhost:3000/v1';
+  return 'https://anime-stream-delta.vercel.app/v1';
 }
 
 // Proxy GET requests under /v1/* to the upstream API

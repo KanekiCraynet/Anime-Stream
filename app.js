@@ -217,7 +217,7 @@ app.use('/', indexRoutes);
 app.use('/anime', animeRoutes);
 app.use('/admin', adminRoutes);
 app.use('/api', apiLimiter, apiRoutes);
-// Upstream API proxy so frontend and API share the same origin: http://localhost:3001/v1
+// Upstream API proxy so frontend and API share the same origin: https://anime-stream-delta.vercel.app/v1
 app.use('/v1', proxyRoutes);
 app.use('/account', dynamicLimiter, accountRoutes);
 app.use('/auth', authRoutes);

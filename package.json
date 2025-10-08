@@ -5,7 +5,12 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "build": "echo 'No build step required'",
+    "vercel-build": "echo 'Vercel build completed'",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
+    "deploy:setup": "./scripts/deploy-vercel.sh"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",

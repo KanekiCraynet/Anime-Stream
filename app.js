@@ -217,13 +217,12 @@ app.use('/admin', adminLimiter);
 app.get('/metrics', getMetrics);
 app.get('/health', healthCheck);
 
-// Main routes
-app.use('/', indexRoutes);
+// Main routes - API routes first to avoid conflicts
+app.use('/v1', proxyRoutes);
+app.use('/api', apiLimiter, apiRoutes);
 app.use('/anime', animeRoutes);
 app.use('/admin', adminRoutes);
-app.use('/api', apiLimiter, apiRoutes);
-// Upstream API proxy so frontend and API share the same origin: https://anime-stream-delta.vercel.app/v1
-app.use('/v1', proxyRoutes);
+app.use('/', indexRoutes);
 app.use('/account', dynamicLimiter, accountRoutes);
 app.use('/auth', authRoutes);
 app.use('/bookmarks', bookmarkRoutes);

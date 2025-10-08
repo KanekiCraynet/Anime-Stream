@@ -1,12 +1,11 @@
-const { getSetting } = require('../models/database');
+const { getSetting, waitForDatabase } = require('../models/database');
 
 async function cookieConsent(req, res, next) {
   try {
-    // Wait a bit for database to be ready if it's not initialized yet
-    let retries = 0;
-    const maxRetries = 10;
+    // Wait for database to be fully ready
+    const dbReady = await waitForDatabase(3000);
     
-    while (retries < maxRetries) {
+    if (dbReady) {
       try {
         const consentEnabled = await getSetting('cookie_consent_enabled');
         
@@ -22,17 +21,12 @@ async function cookieConsent(req, res, next) {
         next();
         return;
       } catch (dbError) {
-        if (dbError.code === 'SQLITE_ERROR' && dbError.message.includes('no such table')) {
-          // Database not ready yet, wait and retry
-          retries++;
-          await new Promise(resolve => setTimeout(resolve, 100));
-          continue;
-        }
-        throw dbError;
+        console.error('Database error in cookie consent middleware:', dbError);
+        // Fall through to defaults
       }
     }
     
-    // If we get here, database is still not ready, use defaults
+    // Use defaults if database is not ready or there's an error
     res.locals.showCookieConsent = false;
     res.locals.cookieConsentGiven = true;
     next();

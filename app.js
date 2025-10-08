@@ -70,6 +70,21 @@ if (env.trustProxy) {
   app.set('trust proxy', 1);
 }
 
+// Initialize database before setting up middleware
+let dbInitialized = false;
+const initDatabase = async () => {
+  if (!dbInitialized) {
+    try {
+      await initializeDatabase();
+      console.log('Database initialized successfully');
+      dbInitialized = true;
+    } catch (error) {
+      console.error('Failed to initialize database:', error);
+      throw error;
+    }
+  }
+};
+
 // Enhanced security middleware
 app.use(securityHeaders);
 app.use(cspPolicy);
@@ -214,8 +229,7 @@ app.use(globalErrorHandler);
 
 async function startServer() {
   try {
-    await initializeDatabase();
-    console.log('Database initialized successfully');
+    await initDatabase();
     
     // Only start server if not in Vercel environment
     if (!process.env.VERCEL) {

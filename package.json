@@ -34,7 +34,8 @@
     "validator": "^13.11.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "vercel": "^48.2.6"
   },
   "keywords": [
     "anime",

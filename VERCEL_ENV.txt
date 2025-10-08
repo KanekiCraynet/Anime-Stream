@@ -11,8 +11,8 @@ SESSION_SECRET=your-super-secret-key-min-32-characters-long
 CSRF_SECRET=your-csrf-secret-key
 
 # API Configuration
-API_BASE_URL=https://your-api-domain.vercel.app/v1
-CORS_ORIGIN=https://your-domain.vercel.app
+API_BASE_URL=https://anime-stream-delta.vercel.app/v1
+CORS_ORIGIN=https://anime-stream-delta.vercel.app/
 
 # Vercel Configuration
 VERCEL=1

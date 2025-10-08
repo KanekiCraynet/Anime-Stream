@@ -15,15 +15,25 @@ const performanceMiddleware = {
       const endMemory = process.memoryUsage();
       const duration = endTime - startTime;
       
+      // Adjust thresholds based on environment
+      const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+      const slowThreshold = isProduction ? 2000 : 1000; // 2s in production, 1s in dev
+      const memoryThreshold = isProduction ? 20 * 1024 * 1024 : 10 * 1024 * 1024; // 20MB in production, 10MB in dev
+      
       // Log slow requests
-      if (duration > 1000) { // 1 second
+      if (duration > slowThreshold) {
         console.warn(`Slow request detected: ${req.method} ${req.url} - ${duration.toFixed(2)}ms`);
       }
       
       // Log memory usage for heavy requests
       const memoryDiff = endMemory.heapUsed - startMemory.heapUsed;
-      if (memoryDiff > 10 * 1024 * 1024) { // 10MB
+      if (memoryDiff > memoryThreshold) {
         console.warn(`High memory usage: ${req.method} ${req.url} - ${(memoryDiff / 1024 / 1024).toFixed(2)}MB`);
+      }
+      
+      // Log performance metrics in production for monitoring
+      if (isProduction && duration > 500) {
+        console.log(`Performance: ${req.method} ${req.url} - ${duration.toFixed(2)}ms - ${(memoryDiff / 1024 / 1024).toFixed(2)}MB`);
       }
       
       // Add performance headers (only if not already sent)

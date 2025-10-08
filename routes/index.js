@@ -78,13 +78,27 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Home page error:', error);
-    res.render('error', {
-      title: 'Terjadi Kesalahan - KitaNime',
-      error: {
-        status: 500,
-        message: 'Tidak dapat memuat data anime'
-      }
-    });
+    
+    // For production, provide more graceful error handling
+    if (process.env.VERCEL === '1') {
+      // Try to render with fallback data
+      res.render('index', {
+        title: 'KitaNime - Streaming Anime Subtitle Indonesia',
+        description: 'Nonton anime subtitle Indonesia terlengkap dan terbaru',
+        ongoingAnime: [],
+        completeAnime: [],
+        currentPage: 'home',
+        error: 'Sedang memuat data, silakan refresh halaman'
+      });
+    } else {
+      res.render('error', {
+        title: 'Terjadi Kesalahan - KitaNime',
+        error: {
+          status: 500,
+          message: 'Tidak dapat memuat data anime'
+        }
+      });
+    }
   }
 });
 

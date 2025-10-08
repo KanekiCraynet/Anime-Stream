@@ -133,18 +133,27 @@ const securityMiddleware = {
     }
   }),
 
-  // Security headers
+  // Security headers optimized for production
   securityHeaders: helmet({
     contentSecurityPolicy: false, // Disabled to use custom CSP above
     crossOriginEmbedderPolicy: false,
-    hsts: {
+    hsts: process.env.NODE_ENV === 'production' ? {
       maxAge: 31536000,
       includeSubDomains: true,
       preload: true
-    },
+    } : false,
     noSniff: true,
     xssFilter: true,
-    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    // Additional production security headers
+    ...(process.env.NODE_ENV === 'production' && {
+      permissionsPolicy: {
+        camera: [],
+        microphone: [],
+        geolocation: [],
+        payment: []
+      }
+    })
   }),
 
   // Request size limiting

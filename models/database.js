@@ -36,20 +36,35 @@ const createDatabaseConnection = () => {
       } else {
         console.log('Connected to SQLite database');
         
-        // Configure database settings
+        // Configure database settings optimized for production
         db.serialize(() => {
+          const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+          
           // Enable WAL mode for better concurrent access
           db.run('PRAGMA journal_mode=WAL');
           // Enable foreign keys
           db.run('PRAGMA foreign_keys=ON');
-          // Optimize for performance
-          db.run('PRAGMA synchronous=NORMAL');
-          db.run('PRAGMA cache_size=10000');
-          db.run('PRAGMA temp_store=MEMORY');
-          // Additional performance optimizations
-          db.run('PRAGMA mmap_size=268435456'); // 256MB memory mapping
-          db.run('PRAGMA page_size=4096'); // 4KB page size
-          db.run('PRAGMA optimize'); // Run query optimizer
+          
+          if (isProduction) {
+            // Production optimizations
+            db.run('PRAGMA synchronous=NORMAL');
+            db.run('PRAGMA cache_size=20000'); // Increased cache for production
+            db.run('PRAGMA temp_store=MEMORY');
+            db.run('PRAGMA mmap_size=536870912'); // 512MB memory mapping for production
+            db.run('PRAGMA page_size=4096');
+            db.run('PRAGMA optimize');
+            // Additional production settings
+            db.run('PRAGMA auto_vacuum=INCREMENTAL');
+            db.run('PRAGMA incremental_vacuum');
+          } else {
+            // Development settings
+            db.run('PRAGMA synchronous=FULL');
+            db.run('PRAGMA cache_size=10000');
+            db.run('PRAGMA temp_store=MEMORY');
+            db.run('PRAGMA mmap_size=268435456'); // 256MB memory mapping
+            db.run('PRAGMA page_size=4096');
+            db.run('PRAGMA optimize');
+          }
           
           // Mark database as ready
           dbReady = true;

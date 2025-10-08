@@ -3,24 +3,29 @@ const NodeCache = require('node-cache');
 // In-memory cache service (can be replaced with Redis in production)
 class CacheService {
   constructor() {
+    // Optimize cache settings for production
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+    
     // Create different cache instances for different data types
     this.apiCache = new NodeCache({ 
-      stdTTL: 600, // 10 minutes default TTL (increased for better performance)
-      checkperiod: 120, // Check for expired keys every 2 minutes
+      stdTTL: isProduction ? 900 : 600, // 15 minutes in production, 10 minutes in dev
+      checkperiod: isProduction ? 180 : 120, // Check every 3 minutes in production
       useClones: false, // Don't clone objects for better performance
-      maxKeys: 1000 // Limit cache size
+      maxKeys: isProduction ? 2000 : 1000 // More cache in production
     });
     
     this.userCache = new NodeCache({ 
-      stdTTL: 1800, // 30 minutes for user data
-      checkperiod: 120,
-      useClones: false
+      stdTTL: isProduction ? 3600 : 1800, // 1 hour in production, 30 minutes in dev
+      checkperiod: isProduction ? 300 : 120,
+      useClones: false,
+      maxKeys: isProduction ? 500 : 200
     });
     
     this.staticCache = new NodeCache({ 
-      stdTTL: 3600, // 1 hour for static content
-      checkperiod: 300,
-      useClones: false
+      stdTTL: isProduction ? 7200 : 3600, // 2 hours in production, 1 hour in dev
+      checkperiod: isProduction ? 600 : 300,
+      useClones: false,
+      maxKeys: isProduction ? 1000 : 500
     });
     
     // Cache statistics

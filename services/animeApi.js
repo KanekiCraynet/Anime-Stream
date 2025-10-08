@@ -58,16 +58,25 @@ class AnimeApiService {
   }
   async getApiBaseUrl() {
     try {
-      // Priority: ENV -> DB -> endpoint.json -> sane default
+      // Priority: ENV -> DB -> endpoint.json -> production default
       const envUrl = process.env.API_BASE_URL;
       if (envUrl && typeof envUrl === 'string' && envUrl.startsWith('http')) {
         return envUrl.replace(/\/$/, '');
       }
 
-      const dbUrl = await getActiveApiEndpoint();
-      if (dbUrl && typeof dbUrl === 'string') {
-        return dbUrl.replace(/\/$/, '');
+      // For production, try database first
+      if (process.env.VERCEL === '1') {
+        try {
+          const dbUrl = await getActiveApiEndpoint();
+          if (dbUrl && typeof dbUrl === 'string') {
+            return dbUrl.replace(/\/$/, '');
+          }
+        } catch (dbError) {
+          console.log('Database not available, using environment fallback');
+        }
       }
+
+      // Fallback to endpoint.json
       try {
         const endpointData = await fs.readFile(this.fallbackEndpointsPath, 'utf8');
         const endpoints = JSON.parse(endpointData);
@@ -75,14 +84,19 @@ class AnimeApiService {
         if (fileUrl && typeof fileUrl === 'string' && fileUrl.startsWith('http')) {
           return fileUrl.replace(/\/$/, '');
         }
-        return 'http://localhost:3000/v1';
       } catch (error) {
-        console.warn('Could not read endpoint.json, using default URL');
-        return 'http://localhost:3000/v1';
+        console.warn('Could not read endpoint.json, using production default');
       }
+
+      // Production default
+      return process.env.VERCEL === '1' 
+        ? 'https://anime-stream-delta.vercel.app/v1'
+        : 'http://localhost:3000/v1';
     } catch (error) {
       console.error('Error getting API base URL:', error);
-      return 'http://localhost:3000/v1';
+      return process.env.VERCEL === '1' 
+        ? 'https://anime-stream-delta.vercel.app/v1'
+        : 'http://localhost:3000/v1';
     }
   }
 

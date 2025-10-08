@@ -36,8 +36,7 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production",
-    "VERCEL": "1"
+    "NODE_ENV": "production"
   },
   "headers": [
     {

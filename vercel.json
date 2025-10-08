@@ -14,7 +14,19 @@
           "models/**",
           "routes/**",
           "services/**",
-          "data/**"
+          "data/**",
+          "api/**"
+        ],
+        "maxLambdaSize": "50mb"
+      }
+    },
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "api/src/**",
+          "api/routes/**"
         ]
       }
     },
@@ -91,6 +103,10 @@
     {
       "source": "/api/(.*)",
       "destination": "/app.js"
+    },
+    {
+      "source": "/v1/(.*)",
+      "destination": "/api/index.js"
     },
     {
       "source": "/admin/(.*)",

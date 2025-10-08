@@ -1,0 +1,34 @@
+# Environment Configuration for Vercel Deployment
+# Copy these variables to Vercel Dashboard > Project Settings > Environment Variables
+
+# Application
+NODE_ENV=production
+PORT=3001
+TRUST_PROXY=1
+
+# Security
+SESSION_SECRET=your-super-secret-key-min-32-characters-long
+CSRF_SECRET=your-csrf-secret-key
+
+# API Configuration
+API_BASE_URL=https://your-api-domain.vercel.app/v1
+CORS_ORIGIN=https://your-domain.vercel.app
+
+# Vercel Configuration
+VERCEL=1
+VERCEL_ANALYTICS_ID=your-analytics-id
+
+# Database (SQLite - auto-created)
+# DATABASE_URL=sqlite:./data/kitanime.db
+
+# Cache (Optional)
+# REDIS_URL=redis://localhost:6379
+
+# Email (Optional)
+# SMTP_HOST=smtp.gmail.com
+# SMTP_PORT=587
+# SMTP_USER=your-email@gmail.com
+# SMTP_PASS=your-app-password
+
+# Monitoring (Optional)
+# SENTRY_DSN=your-sentry-dsn

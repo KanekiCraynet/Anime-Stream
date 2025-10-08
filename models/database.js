@@ -59,11 +59,21 @@ const createDatabaseConnection = () => {
   });
 };
 
-// Initialize database connection
-createDatabaseConnection().catch(err => {
-  console.error('Failed to create database connection:', err);
-  dbReady = false;
-});
+// Initialize database connection and tables
+createDatabaseConnection()
+  .then(async (database) => {
+    // Initialize tables after connection is established
+    try {
+      await initializeDatabase();
+      console.log('Database and tables initialized successfully');
+    } catch (err) {
+      console.error('Failed to initialize database tables:', err);
+    }
+  })
+  .catch(err => {
+    console.error('Failed to create database connection:', err);
+    dbReady = false;
+  });
 
 // Connection pool simulation for better performance
 const connectionPool = {
@@ -141,12 +151,6 @@ const executeUpdate = (query, params = []) => {
 };
 
 async function initializeDatabase() {
-  // Wait for database to be ready
-  if (!dbReady) {
-    console.log('Waiting for database connection...');
-    await createDatabaseConnection();
-  }
-
   return new Promise((resolve, reject) => {
     if (!db) {
       reject(new Error('Database connection not available'));

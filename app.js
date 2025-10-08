@@ -1,0 +1,233 @@
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const helmet = require('helmet');
+const compression = require('compression');
+const cors = require('cors');
+// Removed unused imports to reduce startup overhead
+const createSessionConfig = require('./config/session');
+const env = require('./config/env');
+
+const indexRoutes = require('./routes/index');
+const animeRoutes = require('./routes/anime');
+const adminRoutes = require('./routes/admin');
+const apiRoutes = require('./routes/api');
+const proxyRoutes = require('./routes/proxy');
+const accountRoutes = require('./routes/account');
+const authRoutes = require('./routes/auth');
+const bookmarkRoutes = require('./routes/bookmarks');
+const commentRoutes = require('./routes/comments');
+const watchHistoryRoutes = require('./routes/watch-history');
+
+const cookieConsent = require('./middleware/cookieConsent');
+const adSlots = require('./middleware/adSlots');
+const { 
+  apiLimiter, 
+  authLimiter, 
+  commentLimiter, 
+  searchLimiter, 
+  streamLimiter,
+  speedLimiter,
+  adminLimiter,
+  dynamicLimiter,
+  ipBasedLimiter 
+} = require('./middleware/rateLimiter');
+const { 
+  sanitizeInput, 
+  xssProtection, 
+  sqlInjectionProtection, 
+  csrfProtection, 
+  cspPolicy, 
+  securityHeaders, 
+  requestSizeLimit, 
+  fileUploadSecurity, 
+  ipFilter, 
+  userAgentValidation 
+} = require('./middleware/security');
+const { 
+  requestTiming, 
+  getMetrics, 
+  healthCheck 
+} = require('./middleware/performance');
+const { 
+  globalErrorHandler, 
+  notFoundHandler, 
+  asyncHandler,
+  AppError,
+  fileUploadErrorHandler 
+} = require('./middleware/errorHandler');
+
+const { initializeDatabase } = require('./models/database');
+
+const app = express();
+const PORT = env.port;
+app.disable('x-powered-by');
+if (env.trustProxy) {
+  app.set('trust proxy', 1);
+}
+
+// Enhanced security middleware
+app.use(securityHeaders);
+app.use(cspPolicy);
+app.use(ipFilter);
+app.use(userAgentValidation);
+app.use(requestSizeLimit);
+app.use(sanitizeInput);
+app.use(xssProtection);
+app.use(sqlInjectionProtection);
+
+// Enable gzip/deflate/brotli for dynamic responses
+app.use(compression({
+  level: 6, // Balanced compression level
+  threshold: 1024, // Only compress responses > 1KB
+  filter: (req, res) => {
+    // Don't compress if already compressed
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}));
+app.use(cors({
+  origin: env.corsOrigin,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Performance monitoring and request logging
+app.use(requestTiming);
+app.use(speedLimiter);
+
+// Lightweight request logger with response time in development
+app.use((req, res, next) => {
+  res.locals.req = req;
+  if (process.env.NODE_ENV !== 'production') {
+    const start = process.hrtime.bigint();
+    res.on('finish', () => {
+      const end = process.hrtime.bigint();
+      const ms = Number(end - start) / 1e6;
+      console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} ${res.statusCode} - ${ms.toFixed(1)}ms`);
+    });
+  }
+  next();
+});
+
+// Add request timeout middleware
+app.use((req, res, next) => {
+  req.setTimeout(30000, () => {
+    res.status(408).json({ error: 'Request timeout' });
+  });
+  next();
+});
+
+// Handle OPTIONS requests for CORS
+app.options('/stream', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Range, Content-Type');
+  res.setHeader('Access-Control-Max-Age', '600');
+  res.status(200).end();
+});
+
+app.options('/proxy', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Max-Age', '600');
+  res.status(200).end();
+});
+
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
+
+// Use proper session store for production
+app.use(session(createSessionConfig()));
+
+// Expose user info to views
+app.use((req, res, next) => {
+  res.locals.currentUser = req.session.userId ? {
+    id: req.session.userId,
+    name: req.session.userName,
+    email: req.session.userEmail
+  } : null;
+  next();
+});
+
+// Static assets with sensible caching
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '7d',
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    const ext = path.extname(filePath);
+    const cacheable = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.woff', '.woff2'];
+    if (cacheable.includes(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+    }
+  }
+}));
+
+app.use(cookieConsent);
+app.use(adSlots);
+
+// Apply rate limiting to specific routes
+app.use('/auth', authLimiter);
+app.use('/comments', commentLimiter);
+app.use('/search', searchLimiter);
+app.use('/stream', streamLimiter);
+app.use('/admin', adminLimiter);
+
+// Performance and health endpoints
+app.get('/metrics', getMetrics);
+app.get('/health', healthCheck);
+
+// Main routes
+app.use('/', indexRoutes);
+app.use('/anime', animeRoutes);
+app.use('/admin', adminRoutes);
+app.use('/api', apiLimiter, apiRoutes);
+// Upstream API proxy so frontend and API share the same origin: http://localhost:3001/v1
+app.use('/v1', proxyRoutes);
+app.use('/account', dynamicLimiter, accountRoutes);
+app.use('/auth', authRoutes);
+app.use('/bookmarks', bookmarkRoutes);
+app.use('/comments', commentRoutes);
+app.use('/watch-history', watchHistoryRoutes);
+
+// File upload error handling
+app.use(fileUploadErrorHandler);
+
+// 404 handler
+app.use(notFoundHandler);
+
+// Global error handler
+app.use(globalErrorHandler);
+
+async function startServer() {
+  try {
+    await initializeDatabase();
+    console.log('Database initialized successfully');
+    
+    // Only start server if not in Vercel environment
+    if (!process.env.VERCEL) {
+      app.listen(PORT, () => {
+        console.log(`KitaNime server running on port ${PORT}`);
+        console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      });
+    }
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    if (!process.env.VERCEL) {
+      process.exit(1);
+    }
+  }
+}
+
+// Initialize for both local and Vercel environments
+startServer();
+
+module.exports = app;

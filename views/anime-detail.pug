@@ -1,0 +1,506 @@
+extends layout
+
+block content
+  div(class="min-h-screen bg-gray-50 dark:bg-gray-900")
+    div(class="container mx-auto px-4 py-6")
+      div(class="grid grid-cols-1 lg:grid-cols-4 gap-8")
+        div(class="lg:col-span-3 space-y-6")
+          div(class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden")
+            div(class="md:flex")
+              div(class="md:flex-shrink-0 relative")
+                img(src=anime.poster alt=anime.title class="h-64 w-full object-cover md:h-full md:w-56 transition-transform duration-300 transform rounded-l-xl" onerror="this.onerror=null;this.src='https://placehold.co/400x600?text=No+Image';")
+                div(class="absolute inset-0 bg-black/20 dark:bg-white/10")
+              div(class="p-6 flex-1 flex flex-col justify-between")
+                div
+                  h1(class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2")= anime.title
+                  div(class="flex flex-wrap gap-4 mb-4")
+                    if anime.status
+                      span(class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 dark:bg-primary-200 dark:text-primary-900")= anime.status
+                    if anime.rating
+                      div(class="flex items-center")
+                        svg(class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20")
+                          path(d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z")
+                        span(class="text-sm font-medium text-gray-700 dark:text-gray-200")= anime.rating
+                    
+                    if averageRating && averageRating.total_ratings > 0
+                      div(class="flex items-center ml-4")
+                        svg(class="w-4 h-4 text-blue-400 mr-1" fill="currentColor" viewBox="0 0 20 20")
+                          path(d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z")
+                        span(class="text-sm font-medium text-gray-700 dark:text-gray-200")= `${averageRating.average_rating.toFixed(1)} (${averageRating.total_ratings} rating)`
+                    
+                    if anime.release_year
+                      span(class="text-sm text-gray-500 dark:text-gray-400")= anime.release_year
+                if anime.genres && anime.genres.length > 0
+                  div(class="mb-4")
+                    h3(class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2") Genre:
+                    div(class="flex flex-wrap gap-2")
+                      each genre in anime.genres
+                        a(href=`/genres/${genre.slug}` class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs rounded hover:bg-primary-100 dark:hover:bg-primary-700 hover:text-primary-700 dark:hover:text-primary-200 transition-colors")= genre.slug
+                if anime.synopsis
+                  div(class="mb-4")
+                    h3(class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2") Sinopsis:
+                    p(class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed")= anime.synopsis
+                div(class="flex flex-wrap gap-3 mt-4")
+                  if anime.batch_links && anime.batch_links.length > 0
+                    a(href=`/anime/${anime.slug}/batch` class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium") Download Batch
+                  if currentUser
+                    button(
+                      id="bookmarkBtn"
+                      data-id=anime.id
+                      data-title=anime.title
+                      data-slug=anime.slug
+                      data-poster=anime.poster
+                      class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
+                    )
+                      | Simpan Bookmark
+                  else
+                    a(href=`/auth/login?next=/anime/${anime.slug}` class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium")
+                      | Masuk untuk Bookmark
+
+          // Rating Section
+          if currentUser
+            div(class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6")
+              h3(class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4") Beri Rating
+              div(class="flex items-center space-x-4")
+                div(class="flex items-center space-x-1")
+                  - for (let i = 1; i <= 10; i++)
+                    button(
+                      class=`rating-star w-8 h-8 transition-colors ${userRating && userRating.rating >= i ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-300'}`
+                      data-rating=i
+                      data-anime-slug=anime.slug
+                    )
+                      svg(fill="currentColor" viewBox="0 0 20 20")
+                        path(d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z")
+                span(class="text-sm text-gray-600 dark:text-gray-400")= userRating ? `Rating Anda: ${userRating.rating}/10` : 'Pilih rating'
+              if userRating && userRating.review
+                div(class="mt-4")
+                  h4(class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2") Review Anda:
+                  p(class="text-sm text-gray-600 dark:text-gray-400")= userRating.review
+
+          if anime.episodes && anime.episodes.length > 0
+            div(class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6")
+              h2(class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4") Daftar Episode
+              div(class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3")
+                each episode in anime.episodes.slice(0, 24)
+                  a(href=`/anime/${anime.slug}/episode/${episode.episode}` class="bg-gray-50 dark:bg-gray-700 hover:bg-primary-50 dark:hover:bg-primary-600 border border-gray-200 dark:border-gray-600 hover:border-primary-200 dark:hover:border-primary-400 rounded-lg p-3 text-center transition-colors")
+                    div(class="text-sm font-medium text-gray-900 dark:text-gray-100") Episode #{episode.episode}
+                    if episode.release_date
+                      div(class="text-xs text-gray-500 dark:text-gray-400 mt-1")= episode.release_date
+              if anime.episodes.length > 24
+                div(class="mt-4 text-center")
+                  a(href=`/anime/${anime.slug}/episodes` class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-200 font-medium") Lihat Semua Episode
+
+          // Comments Section
+          div(class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6")
+            h3(class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4") Komentar
+            if currentUser
+              div(class="mb-6")
+                form(id="commentForm" class="space-y-4")
+                  textarea(
+                    id="commentInput"
+                    placeholder="Tulis komentar Anda tentang anime ini..."
+                    class="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                    rows="3"
+                    maxlength="1000"
+                  )
+                  div(class="flex justify-between items-center")
+                    span(id="charCount" class="text-sm text-gray-500 dark:text-gray-400") 0/1000
+                    button(
+                      type="submit"
+                      class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                    ) Kirim Komentar
+            else
+              div(class="text-center py-8")
+                p(class="text-gray-600 dark:text-gray-400 mb-4") Masuk untuk berkomentar
+                a(href=`/auth/login?next=/anime/${anime.slug}` class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors")
+                  svg(class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                    path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1")
+                  span Masuk
+            
+            div(id="commentsList" class="space-y-4")
+              if comments && comments.length > 0
+                each comment in comments
+                  div(class="comment-item border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0")
+                    div(class="flex items-start space-x-3")
+                      div(class="flex-shrink-0")
+                        if comment.avatar_url
+                          img(src=comment.avatar_url alt=comment.user_name class="w-10 h-10 rounded-full object-cover")
+                        else
+                          div(class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center")
+                            span(class="text-primary-600 dark:text-primary-400 font-medium text-sm")= comment.user_name ? comment.user_name.charAt(0).toUpperCase() : 'U'
+                      div(class="flex-1 min-w-0")
+                        div(class="flex items-center space-x-2 mb-1")
+                          span(class="font-medium text-gray-900 dark:text-gray-100")= comment.user_name
+                          span(class="text-sm text-gray-500 dark:text-gray-400")= new Date(comment.created_at).toLocaleDateString('id-ID')
+                        p(class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed")= comment.content
+                        div(class="flex items-center space-x-4 mt-2")
+                          button(
+                            class=`like-btn flex items-center space-x-1 text-sm transition-colors ${comment.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}` 
+                            data-comment-id=comment.id
+                          )
+                            svg(class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20")
+                              path(d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.834a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z")
+                            span= comment.likes_count || 0
+                          button(
+                            class="reply-btn flex items-center space-x-1 text-sm text-gray-500 hover:text-primary-600 transition-colors"
+                            data-comment-id=comment.id
+                          )
+                            svg(class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                              path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z")
+                            span Reply
+              else
+                div(class="text-center py-8")
+                  p(class="text-gray-500 dark:text-gray-400") Belum ada komentar. Jadilah yang pertama berkomentar!
+
+          if adSlots && adSlots.contentBottom && adSlots.contentBottom.length > 0
+            div(class="space-y-6")
+              each ad in adSlots.contentBottom
+                div(class="ad-slot bg-gray-100 dark:bg-gray-700 rounded-lg p-4")!= ad.content
+
+        div(class="lg:col-span-1 space-y-6")
+          if adSlots && adSlots.sidebarTop && adSlots.sidebarTop.length > 0
+            div(class="space-y-6")
+              each ad in adSlots.sidebarTop
+                div(class="ad-slot bg-gray-100 dark:bg-gray-700 rounded-lg p-4")!= ad.content
+
+          div(class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 space-y-3")
+            h3(class="font-bold text-gray-900 dark:text-gray-100 mb-4") Informasi Anime
+            div(class="space-y-3 text-sm")
+              if anime.title
+                div
+                  span(class="font-medium text-gray-700 dark:text-gray-300") Judul:
+                  span(class="text-gray-600 dark:text-gray-400 ml-2")= anime.title
+              if anime.status
+                div
+                  span(class="font-medium text-gray-700 dark:text-gray-300") Status:
+                  span(class="text-gray-600 dark:text-gray-400 ml-2")= anime.status
+              if anime.release_year
+                div
+                  span(class="font-medium text-gray-700 dark:text-gray-300") Tahun:
+                  span(class="text-gray-600 dark:text-gray-400 ml-2")= anime.release_year
+              if anime.rating
+                div
+                  span(class="font-medium text-gray-700 dark:text-gray-300") Rating:
+                  span(class="text-gray-600 dark:text-gray-400 ml-2")= anime.rating
+              if anime.episodes && anime.episodes.length > 0
+                div
+                  span(class="font-medium text-gray-700 dark:text-gray-300") Total Episode:
+                  span(class="text-gray-600 dark:text-gray-400 ml-2")= anime.episodes.length
+
+          div(class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 space-y-3")
+            h3(class="font-bold text-gray-900 dark:text-gray-100 mb-4") Bagikan Anime
+            div(class="flex space-x-3")
+              button(onclick=`shareToFacebook('${anime.title}')` class="flex-1 bg-blue-600 text-white py-2 px-3 rounded text-sm hover:bg-blue-700 transition-colors") Facebook
+              button(onclick=`shareToTwitter('${anime.title}')` class="flex-1 bg-sky-500 text-white py-2 px-3 rounded text-sm hover:bg-sky-600 transition-colors") Twitter
+              button(onclick="copyToClipboard()" class="flex-1 bg-gray-600 text-white py-2 px-3 rounded text-sm hover:bg-gray-700 transition-colors") Copy Link
+
+          div(class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 space-y-3")
+            h3(class="font-bold text-gray-900 dark:text-gray-100 mb-4") Anime Serupa
+            div(class="text-sm text-gray-500 dark:text-gray-400 text-center py-4") Segera hadir...
+
+          if adSlots && adSlots.sidebarBottom && adSlots.sidebarBottom.length > 0
+            div(class="space-y-6")
+              each ad in adSlots.sidebarBottom
+                div(class="ad-slot bg-gray-100 dark:bg-gray-700 rounded-lg p-4")!= ad.content
+
+block scripts
+  script.
+    const animeSlug = '#{anime.slug}';
+    
+    // Bookmark functionality
+    (function(){
+      const btn = document.getElementById('bookmarkBtn');
+      if (!btn) return;
+      btn.addEventListener('click', async function(){
+        const payload = {
+          animeId: this.dataset.id || this.dataset.slug,
+          animeTitle: this.dataset.title,
+          animeSlug: this.dataset.slug,
+          posterUrl: this.dataset.poster
+        };
+        try {
+          const res = await fetch('/bookmarks/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (data && data.success) {
+            this.textContent = 'Tersimpan';
+            this.disabled = true;
+            this.classList.add('opacity-70');
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    })();
+
+    // Rating functionality
+    (function(){
+      const ratingStars = document.querySelectorAll('.rating-star');
+      if (!ratingStars.length) return;
+      
+      ratingStars.forEach(star => {
+        star.addEventListener('click', async function() {
+          const rating = parseInt(this.dataset.rating);
+          const animeSlug = this.dataset.animeSlug;
+          
+          try {
+            const res = await fetch(`/comments/${animeSlug}/rate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ rating })
+            });
+            
+            if (res.ok) {
+              // Update UI
+              ratingStars.forEach((s, index) => {
+                if (index < rating) {
+                  s.classList.remove('text-gray-300', 'hover:text-yellow-300');
+                  s.classList.add('text-yellow-400');
+                } else {
+                  s.classList.remove('text-yellow-400');
+                  s.classList.add('text-gray-300', 'hover:text-yellow-300');
+                }
+              });
+              
+              showNotification('Rating berhasil disimpan!', 'success');
+            }
+          } catch (e) {
+            console.error(e);
+            showNotification('Gagal menyimpan rating', 'error');
+          }
+        });
+      });
+    })();
+
+    // Comments functionality
+    (function(){
+      const commentForm = document.getElementById('commentForm');
+      const commentInput = document.getElementById('commentInput');
+      const charCount = document.getElementById('charCount');
+      
+      if (!commentForm || !commentInput) return;
+      
+      // Character counter
+      commentInput.addEventListener('input', function() {
+        const count = this.value.length;
+        charCount.textContent = `${count}/1000`;
+        
+        if (count > 900) {
+          charCount.classList.add('text-red-500');
+        } else {
+          charCount.classList.remove('text-red-500');
+        }
+      });
+      
+      // Submit comment
+      commentForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const content = commentInput.value.trim();
+        if (content.length < 3) {
+          showNotification('Komentar harus minimal 3 karakter', 'error');
+          return;
+        }
+        
+        try {
+          const res = await fetch(`/comments/${animeSlug}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content })
+          });
+          
+          if (res.ok) {
+            commentInput.value = '';
+            charCount.textContent = '0/1000';
+            showNotification('Komentar berhasil dikirim!', 'success');
+            // Reload comments
+            loadComments();
+          } else {
+            showNotification('Gagal mengirim komentar', 'error');
+          }
+        } catch (e) {
+          console.error(e);
+          showNotification('Gagal mengirim komentar', 'error');
+        }
+      });
+    })();
+
+    // Like functionality
+    (function(){
+      document.addEventListener('click', async function(e) {
+        if (e.target.closest('.like-btn')) {
+          const btn = e.target.closest('.like-btn');
+          const commentId = btn.dataset.commentId;
+          const isLiked = btn.classList.contains('text-red-500');
+          
+          try {
+            const res = await fetch(`/comments/${animeSlug}/like/${commentId}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: isLiked ? 'unlike' : 'like' })
+            });
+            
+            if (res.ok) {
+              const countSpan = btn.querySelector('span');
+              const currentCount = parseInt(countSpan.textContent) || 0;
+              
+              if (isLiked) {
+                btn.classList.remove('text-red-500');
+                btn.classList.add('text-gray-500', 'hover:text-red-500');
+                countSpan.textContent = currentCount - 1;
+              } else {
+                btn.classList.remove('text-gray-500', 'hover:text-red-500');
+                btn.classList.add('text-red-500');
+                countSpan.textContent = currentCount + 1;
+              }
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      });
+    })();
+
+    // Load comments function
+    async function loadComments() {
+      try {
+        const res = await fetch(`/comments/${animeSlug}`);
+        const data = await res.json();
+        
+        if (data.success) {
+          const commentsList = document.getElementById('commentsList');
+          if (commentsList) {
+            commentsList.innerHTML = '';
+            
+            if (data.comments.length === 0) {
+              commentsList.innerHTML = `
+                <div class="text-center py-8">
+                  <p class="text-gray-500 dark:text-gray-400">Belum ada komentar. Jadilah yang pertama berkomentar!</p>
+                </div>
+              `;
+            } else {
+              data.comments.forEach(comment => {
+                const commentElement = createCommentElement(comment);
+                commentsList.appendChild(commentElement);
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Create comment element
+    function createCommentElement(comment) {
+      const div = document.createElement('div');
+      div.className = 'comment-item border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0';
+      
+      const avatarHtml = comment.avatar_url ? 
+        `<img src="${comment.avatar_url}" alt="${comment.user_name}" class="w-10 h-10 rounded-full object-cover">` :
+        `<div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+          <span class="text-primary-600 dark:text-primary-400 font-medium text-sm">${comment.user_name ? comment.user_name.charAt(0).toUpperCase() : 'U'}</span>
+        </div>`;
+      
+      div.innerHTML = `
+        <div class="flex items-start space-x-3">
+          <div class="flex-shrink-0">
+            ${avatarHtml}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center space-x-2 mb-1">
+              <span class="font-medium text-gray-900 dark:text-gray-100">${comment.user_name}</span>
+              <span class="text-sm text-gray-500 dark:text-gray-400">${new Date(comment.created_at).toLocaleDateString('id-ID')}</span>
+            </div>
+            <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">${comment.content}</p>
+            <div class="flex items-center space-x-4 mt-2">
+              <button class="like-btn flex items-center space-x-1 text-sm transition-colors ${comment.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}" data-comment-id="${comment.id}">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.834a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
+                </svg>
+                <span>${comment.likes_count || 0}</span>
+              </button>
+              <button class="reply-btn flex items-center space-x-1 text-sm text-gray-500 hover:text-primary-600 transition-colors" data-comment-id="${comment.id}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                <span>Reply</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      return div;
+    }
+
+    // Notification function
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      let bgColor = 'bg-blue-500';
+      if (type === 'success') bgColor = 'bg-green-500';
+      if (type === 'error') bgColor = 'bg-red-500';
+      
+      notification.className = `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg transform translate-x-full transition-transform duration-300 ${bgColor} text-white`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+      }, 100);
+      
+      setTimeout(() => {
+        notification.style.transform = 'translateX(full)';
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 300);
+      }, 3000);
+    }
+    function shareToFacebook(title) {
+      const url = encodeURIComponent(window.location.href);
+      const text = encodeURIComponent(`Nonton ${title} di KitaNime`);
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, '_blank', 'width=600,height=400');
+    }
+
+    function shareToTwitter(title) {
+      const url = encodeURIComponent(window.location.href);
+      const text = encodeURIComponent(`Nonton ${title} di KitaNime`);
+      window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=600,height=400');
+    }
+
+    function copyToClipboard() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert('Link berhasil disalin!');
+      }).catch(() => {
+        const textArea = document.createElement('textarea');
+        textArea.value = window.location.href;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Link berhasil disalin!');
+      });
+    }
+
+    if ('IntersectionObserver' in window) {
+      const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            if (img.dataset.src) {
+              img.src = img.dataset.src;
+              img.classList.remove('lazy');
+              imageObserver.unobserve(img);
+            }
+          }
+        });
+      });
+
+      document.querySelectorAll('img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+      });
+    }

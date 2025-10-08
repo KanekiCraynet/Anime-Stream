@@ -1,8 +1,8 @@
 const express = require('express');
-// const multer = require('multer'); // Disabled for Vercel compatibility
-// const path = require('path'); // Disabled for Vercel compatibility
-// const fs = require('fs'); // Disabled for Vercel compatibility
-const { getUserById, updateUserProfile, updateUserPassword, /* setUserAvatar, */ getBookmarksByUser, getWatchHistory } = require('../models/database');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const { getUserById, updateUserProfile, updateUserPassword, setUserAvatar, getBookmarksByUser, getWatchHistory } = require('../models/database');
 
 const router = express.Router();
 
@@ -11,42 +11,50 @@ function requireLogin(req, res, next) {
   next();
 }
 
-// Use /tmp directory in Vercel environment, otherwise use public/uploads/avatars
+// Handle file uploads differently for Vercel vs local environment
 const isVercel = process.env.VERCEL === '1';
-const uploadDir = isVercel 
-  ? path.join('/tmp', 'uploads', 'avatars')
-  : path.join(__dirname, '..', 'public', 'uploads', 'avatars');
+let uploadDir;
+let uploadEnabled = false;
 
-// Create directory with error handling
-try {
-  fs.mkdirSync(uploadDir, { recursive: true });
-} catch (error) {
-  console.error('Failed to create upload directory:', error);
-  // In Vercel, we'll handle this gracefully by using a fallback
-  if (isVercel) {
-    console.log('Using /tmp as fallback for uploads in Vercel environment');
+if (isVercel) {
+  // In Vercel, file uploads are disabled due to serverless limitations
+  console.log('File uploads disabled in Vercel environment');
+  uploadEnabled = false;
+} else {
+  // Local development - use public/uploads/avatars
+  uploadDir = path.join(__dirname, '..', 'public', 'uploads', 'avatars');
+  try {
+    fs.mkdirSync(uploadDir, { recursive: true });
+    uploadEnabled = true;
+    console.log('File uploads enabled for local development');
+  } catch (error) {
+    console.error('Failed to create upload directory:', error);
+    uploadEnabled = false;
   }
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const safe = `u${req.session.userId}_${Date.now()}${ext}`;
-    cb(null, safe);
-  }
-});
+// Only configure multer if uploads are enabled
+let upload = null;
+if (uploadEnabled) {
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      const safe = `u${req.session.userId}_${Date.now()}${ext}`;
+      cb(null, safe);
+    }
+  });
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
-  fileFilter: (req, file, cb) => {
-    const allowed = ['.png', '.jpg', '.jpeg', '.webp'];
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, allowed.includes(ext));
-  }
-});
-*/
+  upload = multer({
+    storage,
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+    fileFilter: (req, file, cb) => {
+      const allowed = ['.png', '.jpg', '.jpeg', '.webp'];
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, allowed.includes(ext));
+    }
+  });
+}
 
 router.get('/', requireLogin, async (req, res) => {
   try {
@@ -116,18 +124,27 @@ router.post('/password', requireLogin, async (req, res) => {
   }
 });
 
-/*
-// Disabled for Vercel compatibility
-router.post('/avatar', requireLogin, upload.single('avatar'), async (req, res) => {
-  try {
-    const relPath = `/uploads/avatars/${req.file.filename}`;
-    await setUserAvatar(req.session.userId, relPath);
-    res.redirect('/account?success=avatar_updated');
-  } catch (e) {
-    res.redirect('/account?error=avatar_failed');
-  }
-});
-*/
+// Avatar upload route - only works when uploads are enabled
+if (uploadEnabled && upload) {
+  router.post('/avatar', requireLogin, upload.single('avatar'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.redirect('/account?error=no_file');
+      }
+      const relPath = `/uploads/avatars/${req.file.filename}`;
+      await setUserAvatar(req.session.userId, relPath);
+      res.redirect('/account?success=avatar_updated');
+    } catch (e) {
+      console.error('Avatar upload error:', e);
+      res.redirect('/account?error=avatar_failed');
+    }
+  });
+} else {
+  // Disabled upload route for Vercel
+  router.post('/avatar', requireLogin, (req, res) => {
+    res.redirect('/account?error=uploads_disabled');
+  });
+}
 
 router.get('/test', (req, res) => {
   res.send('Account test route is working');

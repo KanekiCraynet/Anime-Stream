@@ -6,8 +6,8 @@ const { inject } = require('@vercel/analytics');
  */
 class VercelAnalytics {
   constructor() {
-    this.isEnabled = process.env.NODE_ENV === 'production' && process.env.VERCEL;
-    this.analyticsId = process.env.VERCEL_ANALYTICS_ID;
+    this.isEnabled = process.env.NODE_ENV === 'production' && process.env.VERCEL && process.env.ENABLE_ANALYTICS === 'true';
+    this.analyticsId = process.env.VERCEL_ANALYTICS_ID || 'prj_anime-stream-delta';
   }
 
   /**

@@ -7,17 +7,29 @@ PORT=3001
 TRUST_PROXY=1
 
 # Security
-SESSION_SECRET=your-super-secret-key-min-32-characters-long
-CSRF_SECRET=your-csrf-secret-key
+SESSION_SECRET=kitanime-super-secret-key-2025-production-32-chars
+CSRF_SECRET=kitanime-csrf-secret-key-2025-production
 
 # API Configuration
 API_BASE_URL=https://anime-stream-delta.vercel.app/v1
 CORS_ORIGIN=https://anime-stream-delta.vercel.app
 SITE_URL=https://anime-stream-delta.vercel.app
+UPSTREAM_API_BASE_URL=https://anime-stream-delta.vercel.app/v1
 
 # Vercel Configuration
 VERCEL=1
-VERCEL_ANALYTICS_ID=your-analytics-id
+VERCEL_ANALYTICS_ID=prj_anime-stream-delta
+
+# UI Configuration
+ASSETS_URL=https://anime-stream-delta.vercel.app
+CDN_URL=https://anime-stream-delta.vercel.app
+STATIC_URL=https://anime-stream-delta.vercel.app/public
+
+# System Configuration
+ENABLE_ANALYTICS=true
+ENABLE_ADSENSE=true
+ENABLE_CACHING=true
+ENABLE_COMPRESSION=true
 
 # Database (SQLite - auto-created)
 # DATABASE_URL=sqlite:./data/kitanime.db

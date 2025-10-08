@@ -206,6 +206,24 @@ app.get('/favicon.ico', (req, res) => {
 // app.use(adSlots);
 app.use(analyticsMiddleware);
 
+// Environment-based middleware configuration
+app.use((req, res, next) => {
+  res.locals.env = {
+    NODE_ENV: process.env.NODE_ENV,
+    SITE_URL: process.env.SITE_URL || 'https://anime-stream-delta.vercel.app',
+    API_BASE_URL: process.env.API_BASE_URL || 'https://anime-stream-delta.vercel.app/v1',
+    ASSETS_URL: process.env.ASSETS_URL || 'https://anime-stream-delta.vercel.app',
+    CDN_URL: process.env.CDN_URL || 'https://anime-stream-delta.vercel.app',
+    STATIC_URL: process.env.STATIC_URL || 'https://anime-stream-delta.vercel.app/public',
+    ENABLE_ANALYTICS: process.env.ENABLE_ANALYTICS === 'true',
+    ENABLE_ADSENSE: process.env.ENABLE_ADSENSE === 'true',
+    ENABLE_CACHING: process.env.ENABLE_CACHING === 'true',
+    ENABLE_COMPRESSION: process.env.ENABLE_COMPRESSION === 'true',
+    VERCEL: process.env.VERCEL === '1'
+  };
+  next();
+});
+
 // Apply rate limiting to specific routes
 app.use('/auth', authLimiter);
 app.use('/comments', commentLimiter);

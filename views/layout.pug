@@ -183,6 +183,22 @@ html(lang="id" class="scroll-smooth")
     if analytics && analytics.enabled
       != analytics.script
     
+    // Environment-based configuration
+    script.
+      window.APP_CONFIG = {
+        siteUrl: '#{process.env.SITE_URL || "https://anime-stream-delta.vercel.app"}',
+        apiUrl: '#{process.env.API_BASE_URL || "https://anime-stream-delta.vercel.app/v1"}',
+        assetsUrl: '#{process.env.ASSETS_URL || "https://anime-stream-delta.vercel.app"}',
+        cdnUrl: '#{process.env.CDN_URL || "https://anime-stream-delta.vercel.app"}',
+        staticUrl: '#{process.env.STATIC_URL || "https://anime-stream-delta.vercel.app/public"}',
+        enableAnalytics: #{process.env.ENABLE_ANALYTICS === 'true'},
+        enableAdsense: #{process.env.ENABLE_ADSENSE === 'true'},
+        enableCaching: #{process.env.ENABLE_CACHING === 'true'},
+        enableCompression: #{process.env.ENABLE_COMPRESSION === 'true'},
+        isProduction: #{process.env.NODE_ENV === 'production'},
+        isVercel: #{process.env.VERCEL === '1'}
+      };
+    
     script.
       if (typeof tailwind !== 'undefined') {
       tailwind.config = {

@@ -2,7 +2,23 @@
   "version": 2,
   "regions": ["sin1"],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "VERCEL": "1",
+    "TRUST_PROXY": "1",
+    "SESSION_SECRET": "kitanime-super-secret-key-2025-production-32-chars",
+    "CSRF_SECRET": "kitanime-csrf-secret-key-2025-production",
+    "API_BASE_URL": "https://anime-stream-delta.vercel.app/v1",
+    "CORS_ORIGIN": "https://anime-stream-delta.vercel.app",
+    "SITE_URL": "https://anime-stream-delta.vercel.app",
+    "UPSTREAM_API_BASE_URL": "https://anime-stream-delta.vercel.app/v1",
+    "ASSETS_URL": "https://anime-stream-delta.vercel.app",
+    "CDN_URL": "https://anime-stream-delta.vercel.app",
+    "STATIC_URL": "https://anime-stream-delta.vercel.app/public",
+    "ENABLE_ANALYTICS": "true",
+    "ENABLE_ADSENSE": "true",
+    "ENABLE_CACHING": "true",
+    "ENABLE_COMPRESSION": "true",
+    "VERCEL_ANALYTICS_ID": "prj_anime-stream-delta"
   },
   "functions": {
     "app.js": {

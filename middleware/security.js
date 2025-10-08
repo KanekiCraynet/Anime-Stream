@@ -127,7 +127,7 @@ const securityMiddleware = {
       imgSrc: ["'self'", "data:", "https:", "http:"],
       mediaSrc: ["'self'", "https:", "http:"],
       connectSrc: ["'self'", "https:", "http:", "https://vitals.vercel-insights.com", "https://pagead2.googlesyndication.com"],
-      frameSrc: ["'self'", "https:"],
+      frameSrc: ["'self'", "https:", "https://googleads.g.doubleclick.net"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
     }

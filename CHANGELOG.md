@@ -26,7 +26,7 @@ dan project ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ### Security
 
-## [1.0.0] - 2024-01-XX
+## [1.0.0] - 2024-01-10
 
 ### Added
 - 🎬 Anime streaming platform dengan kualitas HD

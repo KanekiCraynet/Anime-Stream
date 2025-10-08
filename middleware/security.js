@@ -122,11 +122,11 @@ const securityMiddleware = {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.tailwindcss.com", "https://cdn.plyr.io"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdn.plyr.io", "https://cdnjs.cloudflare.com", "https://pagead2.googlesyndication.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdn.plyr.io", "https://cdnjs.cloudflare.com", "https://pagead2.googlesyndication.com", "https://cdn.vercel-insights.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "http:"],
       mediaSrc: ["'self'", "https:", "http:"],
-      connectSrc: ["'self'", "https:", "http:"],
+      connectSrc: ["'self'", "https:", "http:", "https://vitals.vercel-insights.com"],
       frameSrc: ["'self'", "https:"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null

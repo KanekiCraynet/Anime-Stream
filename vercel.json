@@ -39,9 +39,6 @@
     "NODE_ENV": "production",
     "VERCEL": "1"
   },
-  "analytics": {
-    "enabled": true
-  },
   "headers": [
     {
       "source": "/stream",
@@ -55,7 +52,7 @@
           "value": "GET, POST, OPTIONS"
         },
         {
-          "key": "Access-Control-Allow-Headers",
+          "key": "Access-control-Allow-Headers",
           "value": "Range, Content-Type"
         },
         {
@@ -126,7 +123,7 @@
     },
     {
       "source": "/sitemap.xml",
-      "destination": "/api/sitemap"
+      "destination": "api/sitemap"
     }
   ]
 }

@@ -126,7 +126,7 @@ const securityMiddleware = {
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "http:"],
       mediaSrc: ["'self'", "https:", "http:"],
-      connectSrc: ["'self'", "https:", "http:", "https://vitals.vercel-insights.com"],
+      connectSrc: ["'self'", "https:", "http:", "https://vitals.vercel-insights.com", "https://pagead2.googlesyndication.com"],
       frameSrc: ["'self'", "https:"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null

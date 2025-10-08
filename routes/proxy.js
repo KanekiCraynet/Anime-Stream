@@ -15,6 +15,7 @@ async function resolveUpstreamBaseUrl() {
 
 // Handle root /v1 endpoint
 router.get('/', (req, res) => {
+  console.log('✅ /v1 endpoint accessed successfully');
   res.json({
     ok: true,
     message: 'KitaNime API v1',
@@ -28,7 +29,8 @@ router.get('/', (req, res) => {
       genres: '/v1/genres',
       movies: '/v1/movies'
     },
-    documentation: 'https://anime-stream-delta.vercel.app/api-docs'
+    documentation: 'https://anime-stream-delta.vercel.app/api-docs',
+    timestamp: new Date().toISOString()
   });
 });
 

@@ -217,6 +217,12 @@ app.use('/admin', adminLimiter);
 app.get('/metrics', getMetrics);
 app.get('/health', healthCheck);
 
+// Debug middleware for /v1 requests
+app.use('/v1', (req, res, next) => {
+  console.log(`🔍 /v1 request: ${req.method} ${req.url}`);
+  next();
+});
+
 // Main routes - API routes first to avoid conflicts
 app.use('/v1', proxyRoutes);
 app.use('/api', apiLimiter, apiRoutes);

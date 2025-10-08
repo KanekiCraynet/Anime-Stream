@@ -27,6 +27,9 @@
     "NODE_ENV": "production",
     "VERCEL": "1"
   },
+  "analytics": {
+    "enabled": true
+  },
   "headers": [
     {
       "source": "/stream",

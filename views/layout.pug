@@ -650,4 +650,91 @@ html(lang="id" class="scroll-smooth")
       script.
         (adsbygoogle = window.adsbygoogle || []).push({});
 
+    // Client-side Analytics Tracking
+    if analytics && analytics.enabled
+      script.
+        // Track page views
+        if (typeof va !== 'undefined') {
+          va('track', 'page_view', {
+            url: window.location.href,
+            title: document.title,
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        // Track user interactions
+        document.addEventListener('DOMContentLoaded', function() {
+          // Track anime clicks
+          document.querySelectorAll('a[href*="/anime/"]').forEach(link => {
+            link.addEventListener('click', function() {
+              if (typeof va !== 'undefined') {
+                va('track', 'anime_click', {
+                  anime_url: this.href,
+                  anime_title: this.textContent.trim(),
+                  timestamp: new Date().toISOString()
+                });
+              }
+            });
+          });
+
+          // Track search queries
+          const searchForm = document.querySelector('form[action*="/search"]');
+          if (searchForm) {
+            searchForm.addEventListener('submit', function(e) {
+              const searchInput = this.querySelector('input[name="keyword"], input[name="q"]');
+              if (searchInput && typeof va !== 'undefined') {
+                va('track', 'search', {
+                  query: searchInput.value,
+                  timestamp: new Date().toISOString()
+                });
+              }
+            });
+          }
+
+          // Track video interactions
+          const videoPlayer = document.querySelector('video');
+          if (videoPlayer) {
+            videoPlayer.addEventListener('play', function() {
+              if (typeof va !== 'undefined') {
+                va('track', 'video_play', {
+                  video_title: document.title,
+                  timestamp: new Date().toISOString()
+                });
+              }
+            });
+
+            videoPlayer.addEventListener('pause', function() {
+              if (typeof va !== 'undefined') {
+                va('track', 'video_pause', {
+                  video_title: document.title,
+                  timestamp: new Date().toISOString()
+                });
+              }
+            });
+
+            videoPlayer.addEventListener('ended', function() {
+              if (typeof va !== 'undefined') {
+                va('track', 'video_complete', {
+                  video_title: document.title,
+                  timestamp: new Date().toISOString()
+                });
+              }
+            });
+          }
+
+          // Track bookmark actions
+          document.querySelectorAll('.bookmark-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+              if (typeof va !== 'undefined') {
+                const isBookmarked = this.classList.contains('bookmarked');
+                va('track', 'bookmark_action', {
+                  action: isBookmarked ? 'remove' : 'add',
+                  anime_id: this.dataset.animeId,
+                  timestamp: new Date().toISOString()
+                });
+              }
+            });
+          });
+        });
+
   block scripts

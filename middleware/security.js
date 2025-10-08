@@ -127,7 +127,7 @@ const securityMiddleware = {
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "http:"],
       mediaSrc: ["'self'", "https:", "http:"],
-      connectSrc: ["'self'", "https:", "http:", "https://vitals.vercel-insights.com", "https://pagead2.googlesyndication.com"],
+      connectSrc: ["'self'", "https:", "http:", "https://vitals.vercel-insights.com", "https://pagead2.googlesyndication.com", "https://cdn.vercel-insights.com"],
       frameSrc: ["'self'", "https:", "https://googleads.g.doubleclick.net"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
@@ -136,7 +136,21 @@ const securityMiddleware = {
 
   // Security headers optimized for production
   securityHeaders: helmet({
-    contentSecurityPolicy: false, // Disabled to use custom CSP above
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.tailwindcss.com", "https://cdn.plyr.io"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdn.plyr.io", "https://cdnjs.cloudflare.com", "https://pagead2.googlesyndication.com", "https://cdn.vercel-insights.com"],
+        scriptSrcElem: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdn.plyr.io", "https://cdnjs.cloudflare.com", "https://pagead2.googlesyndication.com", "https://cdn.vercel-insights.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:", "http:"],
+        mediaSrc: ["'self'", "https:", "http:"],
+        connectSrc: ["'self'", "https:", "http:", "https://vitals.vercel-insights.com", "https://pagead2.googlesyndication.com", "https://cdn.vercel-insights.com"],
+        frameSrc: ["'self'", "https:", "https://googleads.g.doubleclick.net"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
+      }
+    },
     crossOriginEmbedderPolicy: false,
     hsts: process.env.NODE_ENV === 'production' ? {
       maxAge: 31536000,

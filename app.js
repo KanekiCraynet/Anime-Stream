@@ -39,7 +39,6 @@ const {
   xssProtection, 
   sqlInjectionProtection, 
   csrfProtection, 
-  cspPolicy, 
   securityHeaders, 
   requestSizeLimit, 
   fileUploadSecurity, 
@@ -94,7 +93,6 @@ const initDatabase = async () => {
 
 // Enhanced security middleware
 app.use(securityHeaders);
-app.use(cspPolicy);
 app.use(ipFilter);
 app.use(userAgentValidation);
 app.use(requestSizeLimit);

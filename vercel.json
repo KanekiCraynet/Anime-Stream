@@ -20,6 +20,26 @@
     "ENABLE_COMPRESSION": "true",
     "VERCEL_ANALYTICS_ID": "prj_anime-stream-delta"
   },
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "app.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/v1/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/app.js"
+    }
+  ],
   "functions": {
     "app.js": {
       "maxDuration": 30,
@@ -97,52 +117,6 @@
           "value": "public, max-age=0, s-maxage=300"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/public/(.*)",
-      "destination": "/public/$1"
-    },
-    {
-      "source": "/(.*\\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot))",
-      "destination": "/public/$1"
-    },
-    {
-      "source": "/stream",
-      "destination": "/app.js"
-    },
-    {
-      "source": "/proxy",
-      "destination": "/app.js"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/app.js"
-    },
-    {
-      "source": "/v1/(.*)",
-      "destination": "/app.js"
-    },
-    {
-      "source": "/admin/(.*)",
-      "destination": "/app.js"
-    },
-    {
-      "source": "/anime/(.*)",
-      "destination": "/app.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/app.js"
-    },
-    {
-      "source": "/robots.txt",
-      "destination": "/api/robots"
-    },
-    {
-      "source": "/sitemap.xml",
-      "destination": "api/sitemap"
     }
   ]
 }

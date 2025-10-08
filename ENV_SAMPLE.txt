@@ -1,10 +1,9 @@
 # Copy to .env for local/hosting/VPS
-NODE_ENV=development
-PORT=3001
-TRUST_PROXY=0
-SESSION_SECRET=replace-with-strong-secret
-API_BASE_URL=http://localhost:3000/v1
-CORS_ORIGIN=*
+   NODE_ENV=production
+   SESSION_SECRET=your-super-secret-key-here
+   API_BASE_URL=https://anime-stream-delta.vercel.app/v1
+   CORS_ORIGIN=https://anime-stream-delta.vercel.app/
+   VERCEL=1
 
 # Vercel Analytics (optional)
 # VERCEL=1

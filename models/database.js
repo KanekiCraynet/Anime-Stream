@@ -22,24 +22,47 @@ if (isVercel) {
   console.log('Using local data directory for database');
 }
 
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error opening database:', err.message);
-  } else {
-    console.log('Connected to SQLite database');
-    // Enable WAL mode for better concurrent access
-    db.run('PRAGMA journal_mode=WAL');
-    // Enable foreign keys
-    db.run('PRAGMA foreign_keys=ON');
-    // Optimize for performance
-    db.run('PRAGMA synchronous=NORMAL');
-    db.run('PRAGMA cache_size=10000');
-    db.run('PRAGMA temp_store=MEMORY');
-    // Additional performance optimizations
-    db.run('PRAGMA mmap_size=268435456'); // 256MB memory mapping
-    db.run('PRAGMA page_size=4096'); // 4KB page size
-    db.run('PRAGMA optimize'); // Run query optimizer
-  }
+// Create database connection with proper error handling
+let db;
+let dbReady = false;
+
+const createDatabaseConnection = () => {
+  return new Promise((resolve, reject) => {
+    db = new sqlite3.Database(dbPath, (err) => {
+      if (err) {
+        console.error('Error opening database:', err.message);
+        reject(err);
+      } else {
+        console.log('Connected to SQLite database');
+        
+        // Configure database settings
+        db.serialize(() => {
+          // Enable WAL mode for better concurrent access
+          db.run('PRAGMA journal_mode=WAL');
+          // Enable foreign keys
+          db.run('PRAGMA foreign_keys=ON');
+          // Optimize for performance
+          db.run('PRAGMA synchronous=NORMAL');
+          db.run('PRAGMA cache_size=10000');
+          db.run('PRAGMA temp_store=MEMORY');
+          // Additional performance optimizations
+          db.run('PRAGMA mmap_size=268435456'); // 256MB memory mapping
+          db.run('PRAGMA page_size=4096'); // 4KB page size
+          db.run('PRAGMA optimize'); // Run query optimizer
+          
+          // Mark database as ready
+          dbReady = true;
+          resolve(db);
+        });
+      }
+    });
+  });
+};
+
+// Initialize database connection
+createDatabaseConnection().catch(err => {
+  console.error('Failed to create database connection:', err);
+  dbReady = false;
 });
 
 // Connection pool simulation for better performance
@@ -118,9 +141,20 @@ const executeUpdate = (query, params = []) => {
 };
 
 async function initializeDatabase() {
-  return new Promise((resolve, reject) => {
-    db.serialize(() => {
+  // Wait for database to be ready
+  if (!dbReady) {
+    console.log('Waiting for database connection...');
+    await createDatabaseConnection();
+  }
 
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('Database connection not available'));
+      return;
+    }
+
+    db.serialize(() => {
+      // Create tables
       db.run(`CREATE TABLE IF NOT EXISTS api_endpoints (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
@@ -307,47 +341,104 @@ async function initializeDatabase() {
       db.run(`CREATE INDEX IF NOT EXISTS idx_anime_ratings_user_id ON anime_ratings(user_id)`);
       db.run(`CREATE INDEX IF NOT EXISTS idx_anime_ratings_anime_slug ON anime_ratings(anime_slug)`);
 
+      // Insert default data with error handling
       insertDefaultData()
-        .then(() => resolve())
-        .catch(reject);
+        .then(() => {
+          console.log('Database initialization completed successfully');
+          resolve();
+        })
+        .catch(err => {
+          console.error('Error during database initialization:', err);
+          reject(err);
+        });
     });
   });
 }
 
-// Ensure new columns exist on older databases
-try {
-  db.get("PRAGMA table_info(users)", (err, row) => {
-    if (!err) {
-      db.all("PRAGMA table_info(users)", (e2, rows) => {
-        if (!e2) {
-          const hasAvatar = rows.some(r => r.name === 'avatar_url');
-          if (!hasAvatar) {
-            db.run("ALTER TABLE users ADD COLUMN avatar_url TEXT", () => {});
+// Ensure new columns exist on older databases - only run after database is ready
+const ensureColumnsExist = () => {
+  if (!db || !dbReady) {
+    console.log('Database not ready, skipping column check');
+    return;
+  }
+  
+  try {
+    db.get("PRAGMA table_info(users)", (err, row) => {
+      if (!err) {
+        db.all("PRAGMA table_info(users)", (e2, rows) => {
+          if (!e2) {
+            const hasAvatar = rows.some(r => r.name === 'avatar_url');
+            if (!hasAvatar) {
+              db.run("ALTER TABLE users ADD COLUMN avatar_url TEXT", () => {
+                console.log('Added avatar_url column to users table');
+              });
+            }
           }
-        }
-      });
-    }
-  });
-} catch (_) {}
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error checking user table columns:', error);
+  }
+};
+
+// Run column check after database initialization
+setTimeout(ensureColumnsExist, 1000);
 
 async function insertDefaultData() {
   return new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('Database connection not available'));
+      return;
+    }
 
+    let completed = 0;
+    const total = 4;
+    let hasError = false;
+
+    const checkComplete = () => {
+      completed++;
+      if (completed === total && !hasError) {
+        resolve();
+      }
+    };
+
+    const handleError = (err) => {
+      if (!hasError) {
+        hasError = true;
+        reject(err);
+      }
+    };
+
+    // Insert default API endpoint
     db.get("SELECT COUNT(*) as count FROM api_endpoints", (err, row) => {
       if (err) {
-        reject(err);
+        console.error('Error checking api_endpoints:', err);
+        handleError(err);
         return;
       }
 
       if (row.count === 0) {
         db.run(`INSERT INTO api_endpoints (name, url, is_active) VALUES
-          ('Default API', 'http://localhost:3000/v1', 1)`);
+          ('Default API', 'http://localhost:3000/v1', 1)`, (err) => {
+          if (err) {
+            console.error('Error inserting default API endpoint:', err);
+            handleError(err);
+          } else {
+            console.log('Default API endpoint inserted');
+            checkComplete();
+          }
+        });
+      } else {
+        checkComplete();
       }
     });
 
+    // Insert default admin user
     db.get("SELECT COUNT(*) as count FROM admin_users", async (err, row) => {
       if (err) {
-        reject(err);
+        console.error('Error checking admin_users:', err);
+        handleError(err);
         return;
       }
 
@@ -355,17 +446,29 @@ async function insertDefaultData() {
         try {
           const hashedPassword = await bcrypt.hash('admin123', 10);
           db.run(`INSERT INTO admin_users (username, password_hash, email) VALUES
-            ('admin', ?, 'admin@kitanime.com')`, [hashedPassword]);
+            ('admin', ?, 'admin@kitanime.com')`, [hashedPassword], (err) => {
+            if (err) {
+              console.error('Error inserting default admin user:', err);
+              handleError(err);
+            } else {
+              console.log('Default admin user inserted');
+              checkComplete();
+            }
+          });
         } catch (error) {
-          reject(error);
-          return;
+          console.error('Error hashing admin password:', error);
+          handleError(error);
         }
+      } else {
+        checkComplete();
       }
     });
 
+    // Insert default ad slots
     db.get("SELECT COUNT(*) as count FROM ad_slots", (err, row) => {
       if (err) {
-        reject(err);
+        console.error('Error checking ad_slots:', err);
+        handleError(err);
         return;
       }
 
@@ -373,13 +476,25 @@ async function insertDefaultData() {
         db.run(`INSERT INTO ad_slots (name, position, type, content, is_active) VALUES
           ('Header Banner', 'header', 'banner', '<img src="/images/ads/header-banner.jpg" alt="Advertisement" class="w-full h-20 object-cover rounded-lg">', 1),
           ('Sidebar Top', 'sidebar-top', 'adsense', '<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-xxxxxxxxxx" data-ad-slot="xxxxxxxxxx" data-ad-format="auto"></ins>', 1),
-          ('Content Bottom', 'content-bottom', 'banner', '<img src="/images/ads/content-banner.jpg" alt="Advertisement" class="w-full h-32 object-cover rounded-lg">', 1)`);
+          ('Content Bottom', 'content-bottom', 'banner', '<img src="/images/ads/content-banner.jpg" alt="Advertisement" class="w-full h-32 object-cover rounded-lg">', 1)`, (err) => {
+          if (err) {
+            console.error('Error inserting default ad slots:', err);
+            handleError(err);
+          } else {
+            console.log('Default ad slots inserted');
+            checkComplete();
+          }
+        });
+      } else {
+        checkComplete();
       }
     });
 
+    // Insert default settings
     db.get("SELECT COUNT(*) as count FROM settings", (err, row) => {
       if (err) {
-        reject(err);
+        console.error('Error checking settings:', err);
+        handleError(err);
         return;
       }
 
@@ -397,10 +512,18 @@ async function insertDefaultData() {
           ('help_center', 'Pusat Bantuan:\n\n1. Cara Menggunakan Website\n2. Masalah Teknis\n3. Akun dan Profil\n4. Pembayaran dan Donasi\n5. FAQ\n6. Hubungi Kami', 'Pusat bantuan pengguna'),
           ('dmca_policy', 'Kebijakan DMCA:\n\n1. Pemberitahuan Pelanggaran Hak Cipta\n2. Prosedur Penghapusan\n3. Kontra-Pemberitahuan\n4. Pengulangan Pelanggaran\n5. Informasi Kontak DMCA', 'Kebijakan DMCA dan hak cipta'),
           ('about_us', 'Tentang KitaNime:\n\nKitaNime adalah platform streaming anime terlengkap dengan subtitle Indonesia. Kami berkomitmen menyediakan pengalaman menonton anime yang terbaik dengan kualitas HD dan update terbaru setiap hari.', 'Tentang website'),
-          ('social_media', '{"facebook":"","twitter":"","instagram":"","youtube":"","discord":""}', 'Link media sosial (JSON format)')`);
+          ('social_media', '{"facebook":"","twitter":"","instagram":"","youtube":"","discord":""}', 'Link media sosial (JSON format)')`, (err) => {
+          if (err) {
+            console.error('Error inserting default settings:', err);
+            handleError(err);
+          } else {
+            console.log('Default settings inserted');
+            checkComplete();
+          }
+        });
+      } else {
+        checkComplete();
       }
-
-      resolve();
     });
   });
 }

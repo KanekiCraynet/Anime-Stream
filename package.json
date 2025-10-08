@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "build": "echo 'No build step required'",
-    "vercel-build": "echo 'Vercel build completed'",
+    "build": "echo 'Build completed - no additional build steps required'",
+    "vercel-build": "echo 'Vercel build completed successfully'",
     "deploy": "vercel --prod",
     "deploy:preview": "vercel",
     "deploy:setup": "./scripts/deploy-vercel.sh"

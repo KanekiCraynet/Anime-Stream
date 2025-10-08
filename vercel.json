@@ -1,48 +1,21 @@
 {
   "version": 2,
   "regions": ["sin1"],
-  "builds": [
-    {
-      "src": "app.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "views/**",
-          "public/**",
-          "config/**",
-          "middleware/**",
-          "models/**",
-          "routes/**",
-          "services/**",
-          "data/**",
-          "api/**"
-        ],
-        "maxLambdaSize": "50mb"
-      }
-    },
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "api/src/**",
-          "api/routes/**"
-        ]
-      }
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
-    }
-  ],
   "env": {
     "NODE_ENV": "production"
   },
   "functions": {
     "app.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "memory": 1024
+    },
+    "api/index.js": {
+      "maxDuration": 30,
+      "memory": 512
     }
   },
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
   "headers": [
     {
       "source": "/stream",
@@ -113,6 +86,10 @@
   "rewrites": [
     {
       "source": "/public/(.*)",
+      "destination": "/public/$1"
+    },
+    {
+      "source": "/(.*\\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot))",
       "destination": "/public/$1"
     },
     {

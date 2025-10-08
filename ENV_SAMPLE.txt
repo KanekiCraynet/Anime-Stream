@@ -5,5 +5,8 @@ TRUST_PROXY=0
 SESSION_SECRET=replace-with-strong-secret
 API_BASE_URL=http://localhost:3000/v1
 CORS_ORIGIN=*
+
+# Vercel Analytics (optional)
 # VERCEL=1
+# VERCEL_ANALYTICS_ID=your-analytics-id
 

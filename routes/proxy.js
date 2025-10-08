@@ -60,9 +60,26 @@ const proxyRequest = async (req, res) => {
     const contentType = response.headers['content-type'] || 'application/json';
     res.status(response.status).set('content-type', contentType).send(response.data);
   } catch (error) {
+    console.error(`Proxy request failed for ${req.method} ${req.url}:`, error.message);
+    
     const status = error.response?.status || 502;
-    const message = error.response?.data || { error: 'Upstream request failed' };
-    res.status(status).json({ ok: false, upstream: true, status, message });
+    let message = { error: 'Upstream request failed' };
+    
+    if (error.response?.data) {
+      message = error.response.data;
+    } else if (error.code === 'ECONNREFUSED') {
+      message = { error: 'Upstream service unavailable' };
+    } else if (error.code === 'ETIMEDOUT') {
+      message = { error: 'Upstream request timeout' };
+    }
+    
+    res.status(status).json({ 
+      ok: false, 
+      upstream: true, 
+      status, 
+      message,
+      timestamp: new Date().toISOString()
+    });
   }
 };
 

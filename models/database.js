@@ -3,11 +3,24 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 
-const dataDir = path.join(__dirname, '..', 'data');
-if (!fs.existsSync(dataDir)) {
-  try { fs.mkdirSync(dataDir, { recursive: true }); } catch (e) { /* ignore */ }
+// Handle database path for different environments
+const isVercel = process.env.VERCEL === '1';
+let dataDir, dbPath;
+
+if (isVercel) {
+  // In Vercel, use /tmp directory which is writable
+  dataDir = '/tmp';
+  dbPath = path.join(dataDir, 'kitanime.db');
+  console.log('Using /tmp directory for database in Vercel environment');
+} else {
+  // Local development - use data directory
+  dataDir = path.join(__dirname, '..', 'data');
+  if (!fs.existsSync(dataDir)) {
+    try { fs.mkdirSync(dataDir, { recursive: true }); } catch (e) { /* ignore */ }
+  }
+  dbPath = path.join(dataDir, 'kitanime.db');
+  console.log('Using local data directory for database');
 }
-const dbPath = path.join(dataDir, 'kitanime.db');
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {

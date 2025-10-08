@@ -110,6 +110,11 @@ html(lang="id" class="scroll-smooth")
     else
       link(rel="stylesheet" href="/css/tailwind.css")
     link(rel="stylesheet" href="/css/theme.css")
+    
+    // Vercel Analytics
+    if analytics && analytics.enabled
+      != analytics.script
+    
     script.
       if (typeof tailwind !== 'undefined') {
       tailwind.config = {

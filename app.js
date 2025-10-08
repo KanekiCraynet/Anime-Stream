@@ -58,6 +58,8 @@ const {
   fileUploadErrorHandler 
 } = require('./middleware/errorHandler');
 
+const { analyticsMiddleware } = require('./middleware/analytics');
+
 const { initializeDatabase } = require('./models/database');
 
 const app = express();
@@ -173,6 +175,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
 
 app.use(cookieConsent);
 app.use(adSlots);
+app.use(analyticsMiddleware);
 
 // Apply rate limiting to specific routes
 app.use('/auth', authLimiter);

@@ -13,6 +13,25 @@ async function resolveUpstreamBaseUrl() {
   return 'https://anime-stream-delta.vercel.app/v1';
 }
 
+// Handle root /v1 endpoint
+router.get('/', (req, res) => {
+  res.json({
+    ok: true,
+    message: 'KitaNime API v1',
+    version: '1.0.0',
+    endpoints: {
+      home: '/v1/home',
+      search: '/v1/search',
+      anime: '/v1/anime/{slug}',
+      ongoing: '/v1/ongoing-anime',
+      complete: '/v1/complete-anime',
+      genres: '/v1/genres',
+      movies: '/v1/movies'
+    },
+    documentation: 'https://anime-stream-delta.vercel.app/api-docs'
+  });
+});
+
 // Proxy GET requests under /v1/* to the upstream API
 router.get(/.* /, async (req, res) => {
   try {

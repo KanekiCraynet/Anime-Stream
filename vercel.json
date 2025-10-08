@@ -129,7 +129,7 @@
     },
     {
       "source": "/v1/(.*)",
-      "destination": "/api/index.js"
+      "destination": "/app.js"
     },
     {
       "source": "/admin/(.*)",

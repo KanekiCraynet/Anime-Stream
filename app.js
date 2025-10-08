@@ -239,6 +239,11 @@ async function startServer() {
   try {
     await initDatabase();
     
+    // Now that database is ready, set up database-dependent middleware
+    app.use(cookieConsent);
+    app.use(adSlots);
+    console.log('Database-dependent middleware set up successfully');
+    
     // Only start server if not in Vercel environment
     if (!process.env.VERCEL) {
       app.listen(PORT, () => {

@@ -196,6 +196,11 @@ app.use(express.static(path.join(__dirname, 'public'), {
   }
 }));
 
+// Favicon route
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'images', 'favicon.ico'));
+});
+
 // Middleware that depends on database - will be set up after database initialization
 // app.use(cookieConsent);
 // app.use(adSlots);

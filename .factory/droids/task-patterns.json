@@ -1,0 +1,283 @@
+{
+  "task_patterns": {
+    "version": "1.0.0",
+    "patterns": [
+      {
+        "id": "responsive-design",
+        "name": "Responsive Design Implementation",
+        "category": "frontend",
+        "priority": "high",
+        "droids": [
+          "ui-visual-validator",
+          "mobile-security-coder"
+        ],
+        "tasks": [
+          {
+            "step": 1,
+            "task": "Analyze current design",
+            "droid": "ui-visual-validator",
+            "description": "Review current responsive design and identify gaps"
+          },
+          {
+            "step": 2,
+            "task": "Create responsive layouts",
+            "droid": "ui-visual-validator",
+            "description": "Implement mobile-first responsive grid system"
+          },
+          {
+            "step": 3,
+            "task": "Test accessibility",
+            "droid": "mobile-security-coder",
+            "description": "Verify touch targets and keyboard navigation"
+          }
+        ]
+      },
+
+      {
+        "id": "backend-optimization",
+        "name": "Backend Performance Optimization",
+        "category": "backend",
+        "priority": "high",
+        "droids": [
+          "backend-security-coder",
+          "database-optimizer"
+        ],
+        "tasks": [
+          {
+            "step": 1,
+            "task": "Profile application",
+            "droid": "backend-security-coder",
+            "description": "Identify performance bottlenecks"
+          },
+          {
+            "step": 2,
+            "task": "Optimize queries",
+            "droid": "database-optimizer",
+            "description": "Optimize database queries and indexes"
+          },
+          {
+            "step": 3,
+            "task": "Implement caching",
+            "droid": "backend-security-coder",
+            "description": "Add caching strategies for frequently accessed data"
+          }
+        ]
+      },
+
+      {
+        "id": "security-hardening",
+        "name": "Security Hardening",
+        "category": "security",
+        "priority": "critical",
+        "droids": [
+          "backend-security-coder",
+          "mobile-security-coder"
+        ],
+        "tasks": [
+          {
+            "step": 1,
+            "task": "Security audit",
+            "droid": "backend-security-coder",
+            "description": "Perform comprehensive security audit"
+          },
+          {
+            "step": 2,
+            "task": "Fix vulnerabilities",
+            "droid": "backend-security-coder",
+            "description": "Implement security patches and fixes"
+          },
+          {
+            "step": 3,
+            "task": "Verify mobile security",
+            "droid": "mobile-security-coder",
+            "description": "Check mobile-specific security concerns"
+          },
+          {
+            "step": 4,
+            "task": "Test security",
+            "droid": "backend-security-coder",
+            "description": "Run comprehensive security tests"
+          }
+        ]
+      },
+
+      {
+        "id": "csp-configuration",
+        "name": "Content Security Policy Setup",
+        "category": "security",
+        "priority": "critical",
+        "droids": [
+          "backend-security-coder"
+        ],
+        "tasks": [
+          {
+            "step": 1,
+            "task": "Audit current CSP",
+            "droid": "backend-security-coder",
+            "description": "Review current CSP directives"
+          },
+          {
+            "step": 2,
+            "task": "Update CSP directives",
+            "droid": "backend-security-coder",
+            "description": "Add missing domains to CSP whitelist"
+          },
+          {
+            "step": 3,
+            "task": "Test CSP implementation",
+            "droid": "backend-security-coder",
+            "description": "Verify CSP works without breaking features"
+          }
+        ]
+      },
+
+      {
+        "id": "deployment-pipeline",
+        "name": "Deployment Pipeline Setup",
+        "category": "devops",
+        "priority": "high",
+        "droids": [
+          "devops-specialist"
+        ],
+        "tasks": [
+          {
+            "step": 1,
+            "task": "Configure Vercel",
+            "droid": "devops-specialist",
+            "description": "Setup Vercel deployment configuration"
+          },
+          {
+            "step": 2,
+            "task": "Setup CI/CD",
+            "droid": "devops-specialist",
+            "description": "Configure GitHub Actions or equivalent"
+          },
+          {
+            "step": 3,
+            "task": "Test deployment",
+            "droid": "devops-specialist",
+            "description": "Verify deployment pipeline works correctly"
+          }
+        ]
+      },
+
+      {
+        "id": "api-documentation",
+        "name": "API Documentation",
+        "category": "documentation",
+        "priority": "medium",
+        "droids": [
+          "docs-architect"
+        ],
+        "tasks": [
+          {
+            "step": 1,
+            "task": "Analyze API",
+            "droid": "docs-architect",
+            "description": "Review all API endpoints and structures"
+          },
+          {
+            "step": 2,
+            "task": "Generate documentation",
+            "droid": "docs-architect",
+            "description": "Create comprehensive API documentation"
+          },
+          {
+            "step": 3,
+            "task": "Add examples",
+            "droid": "docs-architect",
+            "description": "Include request/response examples"
+          }
+        ]
+      },
+
+      {
+        "id": "bug-investigation",
+        "name": "Bug Investigation and Fix",
+        "category": "maintenance",
+        "priority": "high",
+        "droids": [
+          "backend-security-coder",
+          "ui-visual-validator"
+        ],
+        "tasks": [
+          {
+            "step": 1,
+            "task": "Reproduce bug",
+            "droid": "backend-security-coder",
+            "description": "Identify and reproduce the bug"
+          },
+          {
+            "step": 2,
+            "task": "Find root cause",
+            "droid": "backend-security-coder",
+            "description": "Identify the root cause"
+          },
+          {
+            "step": 3,
+            "task": "Implement fix",
+            "droid": "backend-security-coder",
+            "description": "Develop and implement the fix"
+          },
+          {
+            "step": 4,
+            "task": "Test fix visually",
+            "droid": "ui-visual-validator",
+            "description": "Verify the fix in UI/UX"
+          }
+        ]
+      },
+
+      {
+        "id": "feature-implementation",
+        "name": "Feature Implementation",
+        "category": "development",
+        "priority": "high",
+        "droids": [
+          "backend-security-coder",
+          "ui-visual-validator",
+          "database-optimizer",
+          "docs-architect"
+        ],
+        "tasks": [
+          {
+            "step": 1,
+            "task": "Design feature",
+            "droid": "backend-security-coder",
+            "description": "Plan feature architecture and implementation"
+          },
+          {
+            "step": 2,
+            "task": "Implement backend",
+            "droid": "backend-security-coder",
+            "description": "Build backend logic and APIs"
+          },
+          {
+            "step": 3,
+            "task": "Implement frontend",
+            "droid": "ui-visual-validator",
+            "description": "Create user interface and interactions"
+          },
+          {
+            "step": 4,
+            "task": "Optimize database",
+            "droid": "database-optimizer",
+            "description": "Optimize database schema and queries"
+          },
+          {
+            "step": 5,
+            "task": "Test thoroughly",
+            "droid": "backend-security-coder",
+            "description": "Comprehensive testing of all aspects"
+          },
+          {
+            "step": 6,
+            "task": "Document feature",
+            "droid": "docs-architect",
+            "description": "Create feature documentation"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "droids": {
+    "backend-security-coder": {
+      "enabled": true,
+      "description": "Backend security and API optimization specialist",
+      "responsibilities": [
+        "Code security audits",
+        "API endpoint optimization",
+        "Middleware improvements",
+        "Input validation",
+        "Error handling"
+      ],
+      "triggers": [
+        "middleware changes",
+        "route modifications",
+        "security updates",
+        "API changes"
+      ],
+      "config": {
+        "auto_review": true,
+        "priority": "critical",
+        "check_security": true,
+        "check_performance": true
+      }
+    },
+
+    "ui-visual-validator": {
+      "enabled": true,
+      "description": "UI/UX and visual design validator",
+      "responsibilities": [
+        "Visual design validation",
+        "Responsive design checks",
+        "UI component testing",
+        "Dark mode verification",
+        "Animation performance"
+      ],
+      "triggers": [
+        "CSS changes",
+        "Pug template updates",
+        "Design modifications",
+        "Layout changes"
+      ],
+      "config": {
+        "auto_review": true,
+        "priority": "high",
+        "check_responsive": true,
+        "check_accessibility": true,
+        "check_animations": true
+      }
+    },
+
+    "mobile-security-coder": {
+      "enabled": true,
+      "description": "Mobile security and accessibility expert",
+      "responsibilities": [
+        "Mobile security checks",
+        "Touch target validation",
+        "WCAG compliance",
+        "Input validation on mobile",
+        "Performance on low-end devices"
+      ],
+      "triggers": [
+        "Mobile-specific code",
+        "Input validation",
+        "Accessibility changes"
+      ],
+      "config": {
+        "auto_review": true,
+        "priority": "high",
+        "check_mobile_security": true,
+        "check_accessibility": true,
+        "wcag_level": "AA"
+      }
+    },
+
+    "database-optimizer": {
+      "enabled": true,
+      "description": "Database performance and query optimizer",
+      "responsibilities": [
+        "Query optimization",
+        "Index creation",
+        "Schema improvements",
+        "Performance tuning",
+        "Connection pooling"
+      ],
+      "triggers": [
+        "Database schema changes",
+        "Query modifications",
+        "Performance issues"
+      ],
+      "config": {
+        "auto_review": true,
+        "priority": "high",
+        "check_performance": true,
+        "analyze_queries": true
+      }
+    },
+
+    "devops-specialist": {
+      "enabled": true,
+      "description": "DevOps and deployment specialist",
+      "responsibilities": [
+        "Vercel deployment",
+        "CI/CD pipelines",
+        "Infrastructure setup",
+        "Build optimization",
+        "Environment configuration"
+      ],
+      "triggers": [
+        "Deployment issues",
+        "Build failures",
+        "Infrastructure changes"
+      ],
+      "config": {
+        "auto_review": true,
+        "priority": "critical",
+        "deployment_target": "vercel",
+        "auto_deploy": false
+      }
+    },
+
+    "docs-architect": {
+      "enabled": true,
+      "description": "Documentation and API documentation specialist",
+      "responsibilities": [
+        "API documentation",
+        "Architecture documentation",
+        "Code examples",
+        "Setup guides",
+        "Troubleshooting guides"
+      ],
+      "triggers": [
+        "API changes",
+        "Architecture updates",
+        "Feature documentation needed"
+      ],
+      "config": {
+        "auto_review": true,
+        "priority": "medium",
+        "generate_examples": true,
+        "update_readme": true
+      }
+    }
+  }
+}

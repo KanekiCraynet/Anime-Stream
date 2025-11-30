@@ -1,0 +1,250 @@
+{
+  "orchestrator": {
+    "name": "kitanime-orchestrator",
+    "version": "1.0.0",
+    "description": "Master orchestrator untuk KitaNime anime streaming platform",
+    "projectType": "nodejs-express-pug",
+    "environment": "production",
+    
+    "project_context": {
+      "name": "KitaNime - Anime Streaming Platform",
+      "stack": [
+        "Node.js 16+",
+        "Express.js 5.x",
+        "Pug Templates",
+        "SQLite3",
+        "Tailwind CSS",
+        "Vercel Deployment"
+      ],
+      "structure": {
+        "frontend": "Pug templates + CSS",
+        "backend": "Express.js routes + middleware",
+        "database": "SQLite with models",
+        "api": "Separate API service for scraping"
+      }
+    },
+
+    "droid_assignments": {
+      "frontend_design": {
+        "droid": "ui-visual-validator",
+        "purpose": "Validate UI/UX improvements and responsive design",
+        "triggers": [
+          "CSS changes",
+          "Pug template updates",
+          "Design system modifications"
+        ]
+      },
+      
+      "backend_optimization": {
+        "droid": "backend-security-coder",
+        "purpose": "Security, performance, and API optimizations",
+        "triggers": [
+          "middleware changes",
+          "route modifications",
+          "security updates"
+        ]
+      },
+      
+      "accessibility": {
+        "droid": "mobile-security-coder",
+        "purpose": "Mobile security and accessibility improvements",
+        "triggers": [
+          "Mobile-specific code",
+          "Input validation",
+          "WCAG compliance checks"
+        ]
+      },
+      
+      "performance": {
+        "droid": "database-optimizer",
+        "purpose": "Database and query optimization",
+        "triggers": [
+          "Database schema changes",
+          "Query optimization",
+          "Performance issues"
+        ]
+      },
+      
+      "deployment": {
+        "droid": "devops-specialist",
+        "purpose": "Deployment, CI/CD, and infrastructure",
+        "triggers": [
+          "Deployment issues",
+          "Vercel configuration",
+          "Build failures"
+        ]
+      },
+      
+      "documentation": {
+        "droid": "docs-architect",
+        "purpose": "API and system documentation",
+        "triggers": [
+          "API changes",
+          "Feature documentation",
+          "Architecture updates"
+        ]
+      }
+    },
+
+    "task_patterns": {
+      "bug_fix": {
+        "priority": "high",
+        "droid_sequence": [
+          "backend-security-coder",
+          "ui-visual-validator"
+        ],
+        "steps": [
+          "Identify root cause",
+          "Implement fix",
+          "Test thoroughly",
+          "Update documentation"
+        ]
+      },
+      
+      "feature_development": {
+        "priority": "high",
+        "droid_sequence": [
+          "backend-security-coder",
+          "ui-visual-validator",
+          "database-optimizer"
+        ],
+        "steps": [
+          "Design implementation",
+          "Develop backend",
+          "Create frontend",
+          "Optimize database",
+          "Test and validate",
+          "Document feature"
+        ]
+      },
+      
+      "performance_optimization": {
+        "priority": "medium",
+        "droid_sequence": [
+          "database-optimizer",
+          "devops-specialist"
+        ],
+        "steps": [
+          "Profile application",
+          "Identify bottlenecks",
+          "Optimize database",
+          "Optimize deployment",
+          "Verify improvements"
+        ]
+      },
+      
+      "security_hardening": {
+        "priority": "critical",
+        "droid_sequence": [
+          "backend-security-coder",
+          "mobile-security-coder"
+        ],
+        "steps": [
+          "Audit current security",
+          "Implement fixes",
+          "Test all vectors",
+          "Deploy safely",
+          "Document changes"
+        ]
+      }
+    },
+
+    "automation_rules": {
+      "on_commit": {
+        "actions": [
+          "Run linting",
+          "Validate syntax",
+          "Check dependencies"
+        ]
+      },
+      
+      "on_pull_request": {
+        "actions": [
+          "Run tests",
+          "Check coverage",
+          "Validate changes"
+        ]
+      },
+      
+      "on_deployment": {
+        "actions": [
+          "Run security checks",
+          "Verify performance",
+          "Check accessibility"
+        ]
+      }
+    },
+
+    "quality_gates": {
+      "code_quality": {
+        "enabled": true,
+        "threshold": 80,
+        "checks": [
+          "Linting",
+          "Type checking",
+          "Complexity analysis"
+        ]
+      },
+      
+      "security": {
+        "enabled": true,
+        "checks": [
+          "Vulnerability scan",
+          "OWASP compliance",
+          "CSP validation"
+        ]
+      },
+      
+      "performance": {
+        "enabled": true,
+        "metrics": [
+          "Core Web Vitals",
+          "Load time",
+          "Memory usage"
+        ]
+      },
+      
+      "accessibility": {
+        "enabled": true,
+        "standard": "WCAG 2.1 AA",
+        "checks": [
+          "Color contrast",
+          "Keyboard navigation",
+          "Screen reader support"
+        ]
+      }
+    },
+
+    "monitoring": {
+      "enabled": true,
+      "services": [
+        "Vercel Analytics",
+        "Error tracking",
+        "Performance metrics"
+      ],
+      "alerts": {
+        "deployment_failure": "critical",
+        "security_vulnerability": "critical",
+        "performance_degradation": "high",
+        "high_error_rate": "high"
+      }
+    },
+
+    "documentation": {
+      "locations": [
+        "README.md",
+        "IMPROVEMENTS.md",
+        "DESIGN_SYSTEM.md",
+        "IMPLEMENTATION_GUIDE.md",
+        "CSP_FIXES.md",
+        "DEPLOYMENT_INSTRUCTIONS.md"
+      ],
+      "update_frequency": "on_changes",
+      "auto_generate": [
+        "API docs",
+        "Change logs",
+        "Deployment guides"
+      ]
+    }
+  }
+}

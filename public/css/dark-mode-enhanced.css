@@ -10,6 +10,9 @@
   --text-danger-dark: #f87171;
   --text-warning-light: #d97706;
   --text-warning-dark: #fbbf24;
+  --bg-dark: #0f172a;
+  --bg-secondary-dark: #1e293b;
+  --bg-tertiary-dark: #334155;
 }
 
 /* Enhance text readability in dark mode */
@@ -31,7 +34,7 @@
 .dark input[type="number"],
 .dark select,
 .dark textarea {
-  background-color: #374151 !important;
+  background-color: #1f2937 !important;
   border-color: #4b5563 !important;
   color: #f9fafb !important;
 }
@@ -124,4 +127,49 @@
 
 .dark .text-green-800 {
   color: #34d399 !important;
-} 
+}
+
+/* Enhanced dark mode card contrast */
+.dark .bg-gray-800 {
+  background-color: #1f2937 !important;
+}
+
+.dark .dark\:bg-gray-900 {
+  background-color: #0f172a !important;
+}
+
+/* Better text contrast in dark mode */
+.dark .dark\:text-gray-100 {
+  color: #f3f4f6 !important;
+}
+
+.dark .dark\:text-gray-200 {
+  color: #e5e7eb !important;
+}
+
+.dark .dark\:text-gray-300 {
+  color: #d1d5db !important;
+}
+
+/* Improved link colors in dark mode */
+.dark a {
+  color: #a78bfa;
+}
+
+.dark a:hover {
+  color: #c4b5fd;
+}
+
+/* Better focus states in dark mode */
+.dark :focus-visible {
+  outline-color: #a78bfa;
+}
+
+/* Enhanced animations in dark mode */
+@media (prefers-reduced-motion: reduce) {
+  .dark * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

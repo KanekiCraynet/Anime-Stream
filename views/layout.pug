@@ -157,7 +157,18 @@ html(lang="id" class="scroll-smooth")
     noscript
       link(rel="stylesheet" href="/css/theme.css")
     
-    // Conditional CSS loading based on environment
+    link(rel="preload" href="/css/responsive.css" as="style" onload="this.onload=null;this.rel='stylesheet'")
+    noscript
+      link(rel="stylesheet" href="/css/responsive.css")
+    
+    link(rel="preload" href="/css/dark-mode-enhanced.css" as="style" onload="this.onload=null;this.rel='stylesheet'")
+    noscript
+      link(rel="stylesheet" href="/css/dark-mode-enhanced.css")
+    
+    link(rel="preload" href="/css/accessibility.css" as="style" onload="this.onload=null;this.rel='stylesheet'")
+    noscript
+      link(rel="stylesheet" href="/css/accessibility.css")
+    
     if process.env.NODE_ENV !== 'production'
       link(rel="preload" href="https://cdn.tailwindcss.com/3.4.17" as="script")
       script(src="https://cdn.tailwindcss.com/3.4.17")
@@ -174,6 +185,7 @@ html(lang="id" class="scroll-smooth")
     // Defer non-critical JavaScript
     script(defer src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js")
     script(defer src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js')
+    script(defer src="/js/ui-enhancements.js")
     
     // AdSense loading optimization
     if process.env.NODE_ENV === 'production'

@@ -44,7 +44,7 @@ block content
                 svg(class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24")
                   path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7")
             
-            div(class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6")
+            div(class="anime-grid")
              each anime in ongoingAnime.slice(0, 12)
                div(class="anime-card group relative" data-anime-id=anime.id)
                  a(href=`/anime/${anime.slug}` class="block")
@@ -88,7 +88,7 @@ block content
                 svg(class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24")
                   path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7")
             
-            div(class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6")
+            div(class="anime-grid")
               each anime in completeAnime.slice(0, 12)
                 div(class="anime-card group relative" data-anime-id=anime.id)
                   a(href=`/anime/${anime.slug}` class="block")

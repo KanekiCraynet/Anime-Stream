@@ -42,16 +42,6 @@
       "dest": "/app.js"
     }
   ],
-  "functions": {
-    "app.js": {
-      "maxDuration": 30,
-      "memory": 1024
-    },
-    "api/index.js": {
-      "maxDuration": 30,
-      "memory": 512
-    }
-  },
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "headers": [

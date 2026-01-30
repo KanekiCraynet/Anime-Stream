@@ -26,6 +26,12 @@ html(lang="id" class="scroll-smooth")
     link(rel="apple-touch-icon" sizes="180x180" href="/images/logo.png")
     link(rel="robots" href="/robots.txt")
     link(rel="sitemap" type="application/xml" href="/sitemap.xml")
+    
+    // PWA Manifest
+    link(rel="manifest" href="/manifest.json")
+    meta(name="apple-mobile-web-app-capable" content="yes")
+    meta(name="apple-mobile-web-app-status-bar-style" content="default")
+    meta(name="apple-mobile-web-app-title" content="KitaNime")
 
     meta(http-equiv="X-UA-Compatible" content="IE=edge")
     meta(name="format-detection" content="telephone=no")
@@ -152,22 +158,13 @@ html(lang="id" class="scroll-smooth")
         transform: translateY(-1px);
       }
     
-    // Non-critical CSS loading with preload
-    link(rel="preload" href="/css/theme.css" as="style" onload="this.onload=null;this.rel='stylesheet'")
-    noscript
-      link(rel="stylesheet" href="/css/theme.css")
     
-    link(rel="preload" href="/css/responsive.css" as="style" onload="this.onload=null;this.rel='stylesheet'")
-    noscript
-      link(rel="stylesheet" href="/css/responsive.css")
+    // CSS Stylesheets - loaded directly for reliability
+    link(rel="stylesheet" href="/css/theme.css")
+    link(rel="stylesheet" href="/css/responsive.css")
+    link(rel="stylesheet" href="/css/dark-mode-enhanced.css")
+    link(rel="stylesheet" href="/css/accessibility.css")
     
-    link(rel="preload" href="/css/dark-mode-enhanced.css" as="style" onload="this.onload=null;this.rel='stylesheet'")
-    noscript
-      link(rel="stylesheet" href="/css/dark-mode-enhanced.css")
-    
-    link(rel="preload" href="/css/accessibility.css" as="style" onload="this.onload=null;this.rel='stylesheet'")
-    noscript
-      link(rel="stylesheet" href="/css/accessibility.css")
     
     if process.env.NODE_ENV !== 'production'
       link(rel="preload" href="https://cdn.tailwindcss.com/3.4.17" as="script")
@@ -184,6 +181,7 @@ html(lang="id" class="scroll-smooth")
     script(defer src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js")
     script(defer src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js')
     script(defer src="/js/ui-enhancements.js")
+    script(defer src="/js/realtime.js")
     
     // AdSense loading optimization
     if process.env.NODE_ENV === 'production'
@@ -458,6 +456,29 @@ html(lang="id" class="scroll-smooth")
       svg(class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24")
         path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18")
 
+    // Mobile Bottom Navigation
+    nav(class="bottom-nav")
+      a(href="/" class=`bottom-nav-item ${currentPage === 'home' ? 'active' : ''}`)
+        span(class="bottom-nav-icon")
+          svg(fill="none" stroke="currentColor" viewBox="0 0 24 24")
+            path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6")
+        span(class="bottom-nav-label") Home
+      a(href="/ongoing" class=`bottom-nav-item ${currentPage === 'ongoing' ? 'active' : ''}`)
+        span(class="bottom-nav-icon")
+          svg(fill="none" stroke="currentColor" viewBox="0 0 24 24")
+            path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z")
+        span(class="bottom-nav-label") Ongoing
+      a(href="/genres" class=`bottom-nav-item ${currentPage === 'genres' ? 'active' : ''}`)
+        span(class="bottom-nav-icon")
+          svg(fill="none" stroke="currentColor" viewBox="0 0 24 24")
+            path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 12V7a4 4 0 014-4z")
+        span(class="bottom-nav-label") Genre
+      a(href="/search" class=`bottom-nav-item ${currentPage === 'search' ? 'active' : ''}`)
+        span(class="bottom-nav-icon")
+          svg(fill="none" stroke="currentColor" viewBox="0 0 24 24")
+            path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z")
+        span(class="bottom-nav-label") Cari
+
     if showCookieConsent
       div(id="cookieConsent" class="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50")
         div(class="flex items-start space-x-3")
@@ -471,6 +492,19 @@ html(lang="id" class="scroll-smooth")
               button(id="declineCookies" class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300 transition-colors") Tolak
 
     script.
+      // Service Worker Registration for PWA
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('[SW] Registration successful:', registration.scope);
+            })
+            .catch(function(error) {
+              console.log('[SW] Registration failed:', error);
+            });
+        });
+      }
+      
       const darkModeToggle = document.getElementById('darkModeToggle');
       const html = document.documentElement;
       

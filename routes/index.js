@@ -7,7 +7,8 @@ const { getSetting, getAllSettings } = require('../models/database');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const qs = require('qs');
-const request = require('request');
+// Note: 'request' package removed - deprecated and has unfixable vulnerabilities
+// Using axios instead which is already imported
 
 const getSourceVideo = async (url) => {
   try {
@@ -41,7 +42,7 @@ router.get('/', async (req, res) => {
     // Try to get cached data first
     const cacheKey = 'home-data';
     const cachedData = await cacheService.get(cacheKey, 'api');
-    
+
     let homeData;
     if (cachedData) {
       console.log('Cache hit for home data');
@@ -49,7 +50,7 @@ router.get('/', async (req, res) => {
     } else {
       console.log('Cache miss for home data, fetching from API');
       homeData = await animeApi.getHomeData();
-      
+
       // Cache the result for 10 minutes
       if (homeData) {
         await cacheService.set(cacheKey, homeData, 600, 'api');
@@ -68,7 +69,7 @@ router.get('/', async (req, res) => {
       siteTitle = 'KitaNime - Streaming Anime Subtitle Indonesia';
       siteDescription = 'Nonton anime subtitle Indonesia terlengkap dan terbaru';
     }
-    
+
     res.render('index', {
       title: siteTitle || 'KitaNime - Streaming Anime Subtitle Indonesia',
       description: siteDescription || 'Nonton anime subtitle Indonesia terlengkap dan terbaru',
@@ -78,7 +79,7 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Home page error:', error);
-    
+
     // For production, provide more graceful error handling
     if (process.env.VERCEL === '1') {
       // Try to render with fallback data
@@ -218,13 +219,13 @@ router.get('/contact', async (req, res) => {
 router.get('/stream', async (req, res) => {
   const startTime = Date.now();
   console.log('Streaming request:', req.query.url);
-  
+
   try {
     const googleVideoUrl = req.query.url;
     const range = req.headers.range;
     const token = req.query.token;
     const quality = req.query.quality || 'auto';
-    
+
     if (!googleVideoUrl) {
       return res.status(400).json({ error: 'URL parameter is required' });
     }
@@ -235,25 +236,25 @@ router.get('/stream', async (req, res) => {
     } catch (e) {
       return res.status(400).json({ error: 'Invalid URL format' });
     }
-    
+
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Range, Content-Type');
     res.setHeader('Access-Control-Expose-Headers', 'Content-Range, Accept-Ranges, Content-Length');
-    
+
     if (!token) {
       const match = await getSourceVideo(googleVideoUrl);
       if (!match || !match[0] || !match[0].play_url) {
         return res.status(404).json({ error: 'Video source not found' });
       }
-      
+
       const referer = new URL(googleVideoUrl).host;
       const videoUrl = match[0].play_url;
       const host = new URL(videoUrl).hostname;
-      
+
       console.log(`Streaming from: ${host}`);
-      
+
       // Enhanced headers for better compatibility
       const headers = {
         'Range': range || '',
@@ -271,7 +272,7 @@ router.get('/stream', async (req, res) => {
       if (!range) {
         delete headers.Range;
       }
-      
+
       const response = await axios.get(videoUrl, {
         responseType: 'stream',
         timeout: 45000, // 45 second timeout
@@ -279,12 +280,12 @@ router.get('/stream', async (req, res) => {
         headers,
         validateStatus: (status) => status < 400
       });
-    
+
       // Set response headers
       res.setHeader('Content-Type', response.headers['content-type'] || 'video/mp4');
       res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour cache
       res.setHeader('ETag', response.headers['etag'] || `"${Date.now()}"`);
-      
+
       if (range && response.headers['content-range']) {
         res.setHeader('Content-Range', response.headers['content-range']);
         res.setHeader('Accept-Ranges', 'bytes');
@@ -294,7 +295,7 @@ router.get('/stream', async (req, res) => {
         res.setHeader('Content-Length', response.headers['content-length']);
         res.setHeader('Accept-Ranges', 'bytes');
       }
-    
+
       // Handle stream errors with better error handling
       response.data.on('error', (err) => {
         console.error('Stream error:', err);
@@ -314,20 +315,20 @@ router.get('/stream', async (req, res) => {
         const duration = Date.now() - startTime;
         console.log(`Stream completed in ${duration}ms`);
       });
-      
+
       // Pipe the stream with error handling
       response.data.pipe(res, { end: true });
-      
+
     } else {
       // Handle token-based streaming (existing logic)
       const match = await getSourceVideo(`https://www.blogger.com/video.g?token=${token}`);
       if (!match || !match[0] || !match[0].play_url) {
         return res.status(404).json({ error: 'Video source not found' });
       }
-      
+
       const referer = 'www.blogger.com';
       const videoUrl = match[0].play_url;
-      
+
       const response = await axios.get(videoUrl, {
         responseType: 'stream',
         timeout: 45000,
@@ -343,14 +344,14 @@ router.get('/stream', async (req, res) => {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
       });
-    
+
       res.setHeader('Content-Type', response.headers['content-type'] || 'video/mp4');
       if (range && response.headers['content-range']) {
         res.setHeader('Content-Range', response.headers['content-range']);
         res.setHeader('Accept-Ranges', 'bytes');
         res.status(206);
       }
-    
+
       response.data.pipe(res);
     }
   } catch (error) {
@@ -369,19 +370,19 @@ router.get('/stream', async (req, res) => {
 router.get('/blog/:token', async (req, res) => {
   console.log('streaming..')
   try {
-    const {token} = req.params;
+    const { token } = req.params;
     const googleVideoUrl = `https://www.blogger.com/video.g?token=${token}`;
     const range = req.headers.range;
-    
+
     if (!googleVideoUrl) {
       return res.status(400).json({ error: 'URL parameter is required' });
     }
-    
+
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Range, Content-Type');
-    
-    if(token){
+
+    if (token) {
       const match = await getSourceVideo(googleVideoUrl);
       const Referer = new URL(googleVideoUrl).host;
       console.log(Referer)
@@ -399,14 +400,14 @@ router.get('/blog/:token', async (req, res) => {
           'Referer': `https://${Referer}`
         }
       });
-    
+
       res.setHeader('Content-Type', response.headers['content-type'] || 'video/mp4');
       if (range) {
         res.setHeader('Content-Range', response.headers['content-range']);
         res.setHeader('Accept-Ranges', 'bytes');
         res.status(206);
       }
-    
+
       response.data.pipe(res);
     }
   } catch (error) {
@@ -419,7 +420,7 @@ router.get('/blog/:token', async (req, res) => {
 });
 
 router.get("/gdrive/:vid", async (req, res) => {
-  const {vid} = req.params;
+  const { vid } = req.params;
   const range = req.headers.range;
   try {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -428,18 +429,18 @@ router.get("/gdrive/:vid", async (req, res) => {
     const gdriveUrl = `https://docs.google.com/uc?export=download&id=${vid}`;
     const Referer = new URL(gdriveUrl).host;
     const response = await axios.get(gdriveUrl, {
-        responseType: 'stream',
-        headers: {
-          'Range': range,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Encoding': 'gzip, deflate, br, zstd',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-          'Pragma': 'no-cache',
-          'Referer': `https://${Referer}`
-        }
-      });
+      responseType: 'stream',
+      headers: {
+        'Range': range,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Pragma': 'no-cache',
+        'Referer': `https://${Referer}`
+      }
+    });
 
     res.setHeader('Content-Type', response.headers['content-type'] || 'video/mp4');
     if (range) {
@@ -458,7 +459,7 @@ router.get("/gdrive/:vid", async (req, res) => {
 router.get('/ongoing', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    
+
     // Set cache headers for better performance
     res.set({
       'Cache-Control': 'public, max-age=300', // 5 minutes cache
@@ -468,7 +469,7 @@ router.get('/ongoing', async (req, res) => {
     // Try to get cached data first
     const cacheKey = `ongoing-page-${page}`;
     const cachedData = await cacheService.get(cacheKey, 'api');
-    
+
     let ongoingData;
     if (cachedData) {
       console.log(`Cache hit for ongoing page ${page}`);
@@ -476,7 +477,7 @@ router.get('/ongoing', async (req, res) => {
     } else {
       console.log(`Cache miss for ongoing page ${page}, fetching from API`);
       ongoingData = await animeApi.getOngoingAnime(page);
-      
+
       // Cache the result for 10 minutes
       if (ongoingData) {
         await cacheService.set(cacheKey, ongoingData, 600, 'api');
@@ -529,7 +530,7 @@ router.get('/search', async (req, res) => {
   try {
     const keyword = req.query.q || '';
     const page = parseInt(req.query.page) || 1;
-    
+
     let searchResults = null;
     if (keyword.trim()) {
       searchResults = await animeApi.searchAnime(keyword, page);
@@ -607,7 +608,7 @@ router.get('/movies/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     var movieData = await animeApi.getMovies(page);
-    if(!movieData) {
+    if (!movieData) {
       return res.status(404).render('error', {
         title: 'Tidak ada film anime - KitaNime',
         error: {
@@ -620,7 +621,7 @@ router.get('/movies/', async (req, res) => {
       title: `Daftar Film Anime - KitaNime`,
       description: `Daftar film anime terbaru`,
       animeList: movieData?.data?.movies || [],
-      pagination : movieData?.data?.pagination || { current_page: 1, total_pages: 2 },
+      pagination: movieData?.data?.pagination || { current_page: 1, total_pages: 2 },
       currentPage: 'movies'
     });
   } catch (error) {
@@ -644,7 +645,7 @@ router.get('/movies/:year/:month/:slug', async (req, res) => {
     movie = movie.split('/')[3];
     //https://www.mp4upload.com/embed-iwzh09efokfj.html
     movie = `https://www.mp4upload.com/embed-${movie}.html`;
-    
+
     if (movieData?.data) {
       movieData.data.stream_url = movie;
     }
@@ -670,7 +671,7 @@ router.get('/movies/:year/:month/:slug', async (req, res) => {
 // Robots.txt route
 router.get('/robots.txt', (req, res) => {
   const baseUrl = `${req.protocol}://${req.get('host')}`;
-  
+
   const robotsTxt = `# Robots.txt for KitaNime - Streaming Anime Subtitle Indonesia
 # Website: ${baseUrl}
 # Generated: ${new Date().toISOString()}
@@ -738,13 +739,13 @@ router.get('/sitemap.xml', async (req, res) => {
   try {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const currentDate = new Date().toISOString().split('T')[0];
-    
+
     // Get data for sitemap
     const homeData = await animeApi.getHomeData();
     const ongoingAnime = homeData?.ongoing_anime || [];
     const completeAnime = homeData?.complete_anime || [];
     const genres = await animeApi.getGenres() || [];
-    
+
     let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
@@ -817,7 +818,7 @@ router.get('/sitemap.xml', async (req, res) => {
     <lastmod>${currentDate}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>`;
-        
+
         // Add image information if available
         if (anime.poster) {
           sitemap += `
@@ -827,7 +828,7 @@ router.get('/sitemap.xml', async (req, res) => {
       <image:caption>Poster anime ${anime.title || anime.slug}</image:caption>
     </image:image>`;
         }
-        
+
         sitemap += `
   </url>`;
       }

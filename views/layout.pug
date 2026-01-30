@@ -191,6 +191,9 @@ html(lang="id" class="scroll-smooth")
     if analytics && analytics.enabled
       != analytics.script
     
+    // Vercel Speed Insights - only in production/Vercel environment
+    if process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
+      script(defer src="https://va.vercel-scripts.com/v1/speed-insights/script.js")
     // Environment-based configuration
     script.
       window.APP_CONFIG = {

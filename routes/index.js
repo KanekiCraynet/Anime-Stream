@@ -33,11 +33,16 @@ const getSourceVideo = async (url) => {
 
 router.get('/', async (req, res) => {
   try {
-    // Set cache headers for better performance
+    // Set aggressive cache headers for CDN edge caching
     res.set({
-      'Cache-Control': 'public, max-age=300', // 5 minutes cache
-      'ETag': `home-${Date.now()}`
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600', // 5 min edge cache, 10 min stale
+      'Surrogate-Control': 'max-age=600',
+      'CDN-Cache-Control': 'max-age=300'
     });
+
+    // Use hardcoded settings for performance (avoid DB calls on critical path)
+    const siteTitle = 'KitaNime - Streaming Anime Subtitle Indonesia';
+    const siteDescription = 'Nonton anime subtitle Indonesia terlengkap dan terbaru';
 
     // Try to get cached data first
     const cacheKey = 'home-data';
@@ -49,30 +54,30 @@ router.get('/', async (req, res) => {
       homeData = cachedData;
     } else {
       console.log('Cache miss for home data, fetching from API');
-      homeData = await animeApi.getHomeData();
 
-      // Cache the result for 10 minutes
-      if (homeData) {
-        await cacheService.set(cacheKey, homeData, 600, 'api');
+      // Add timeout to prevent slow API from blocking
+      const fetchWithTimeout = async () => {
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('API timeout')), 5000)
+        );
+        return Promise.race([animeApi.getHomeData(), timeoutPromise]);
+      };
+
+      try {
+        homeData = await fetchWithTimeout();
+        // Cache the result for 10 minutes
+        if (homeData) {
+          await cacheService.set(cacheKey, homeData, 600, 'api');
+        }
+      } catch (apiError) {
+        console.error('Home API error:', apiError.message);
+        homeData = null; // Will use empty arrays
       }
     }
 
-    // Get settings with fallback to reduce database calls
-    let siteTitle, siteDescription;
-    try {
-      [siteTitle, siteDescription] = await Promise.all([
-        getSetting('site_title'),
-        getSetting('site_description')
-      ]);
-    } catch (dbError) {
-      console.log('Using fallback settings due to database error:', dbError.message);
-      siteTitle = 'KitaNime - Streaming Anime Subtitle Indonesia';
-      siteDescription = 'Nonton anime subtitle Indonesia terlengkap dan terbaru';
-    }
-
     res.render('index', {
-      title: siteTitle || 'KitaNime - Streaming Anime Subtitle Indonesia',
-      description: siteDescription || 'Nonton anime subtitle Indonesia terlengkap dan terbaru',
+      title: siteTitle,
+      description: siteDescription,
       ongoingAnime: homeData?.ongoing_anime || [],
       completeAnime: homeData?.complete_anime || [],
       currentPage: 'home'

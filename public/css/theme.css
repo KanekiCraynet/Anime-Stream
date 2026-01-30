@@ -48,6 +48,52 @@
   --spacing-2xl: 3rem;
 }
 
+/* Dark Mode Theme - Override all colors */
+html.dark {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-2: #334155;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --glass-bg: var(--glass-bg-dark);
+  --glass-border: var(--glass-border-dark);
+  --glass-shadow: var(--glass-shadow-dark);
+}
+
+/* Dark mode body and main container */
+html.dark body {
+  background-color: #0f172a !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark main,
+html.dark .container {
+  background-color: transparent !important;
+}
+
+/* Hero Section Dark Mode - Deep purple/indigo gradient */
+html.dark #hero-section,
+html.dark section.from-primary-600,
+html.dark .from-primary-600.via-purple-600.to-indigo-700 {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #581c87 75%, #1e1b4b 100%) !important;
+  background-image: linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #581c87 75%, #1e1b4b 100%) !important;
+}
+
+/* Dark mode for all bg-gradient elements */
+html.dark [class*="bg-gradient-to-br"][class*="from-primary"] {
+  background: linear-gradient(to bottom right, #1e1b4b, #312e81, #4c1d95) !important;
+}
+
+/* Force dark backgrounds on common elements */
+html.dark .bg-white {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-gray-100 {
+  background-color: #0f172a !important;
+}
+
 /* Glassmorphism Components */
 .glass {
   background: var(--glass-bg);

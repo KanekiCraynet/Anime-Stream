@@ -508,14 +508,31 @@ html(lang="id" class="scroll-smooth")
       const darkModeToggle = document.getElementById('darkModeToggle');
       const html = document.documentElement;
       
+      // Function to update hero section gradient
+      function updateHeroGradient(isDark) {
+        const hero = document.getElementById('hero-section');
+        if (hero) {
+          if (isDark) {
+            hero.style.background = 'linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #581c87 75%, #1e1b4b 100%)';
+          } else {
+            hero.style.background = '';
+          }
+        }
+      }
+      
       const savedTheme = localStorage.getItem('theme');
       if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         html.classList.add('dark');
+        updateHeroGradient(true);
       }
       
       darkModeToggle?.addEventListener('click', function() {
         html.classList.toggle('dark');
-        localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        const isDark = html.classList.contains('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        
+        // Update hero gradient
+        updateHeroGradient(isDark);
         
         // Add animation effect
         this.style.transform = 'scale(0.95)';

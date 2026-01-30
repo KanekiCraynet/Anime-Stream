@@ -15,16 +15,53 @@
   --bg-tertiary-dark: #334155;
 }
 
+/* Dark mode background overrides */
+.dark body {
+  background-color: #0f172a !important;
+}
+
+.dark main {
+  background-color: #0f172a !important;
+}
+
+/* Force dark gradient for hero section */
+.dark .from-primary-600 {
+  --tw-gradient-from: #5b21b6 var(--tw-gradient-from-position) !important;
+}
+
+.dark .via-purple-600 {
+  --tw-gradient-via: #7e22ce var(--tw-gradient-via-position) !important;
+}
+
+.dark .to-indigo-700 {
+  --tw-gradient-to: #312e81 var(--tw-gradient-to-position) !important;
+}
+
+/* Dark mode container backgrounds */
+.dark .bg-white {
+  background-color: #1f2937 !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #111827 !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #1f2937 !important;
+}
+
 /* Enhance text readability in dark mode */
 .dark .text-gray-500,
 .dark .text-gray-600,
 .dark .text-gray-700 {
-  color: #9ca3af !important; /* lighter gray in dark mode */
+  color: #9ca3af !important;
+  /* lighter gray in dark mode */
 }
 
 .dark .text-gray-800,
 .dark .text-gray-900 {
-  color: #e5e7eb !important; /* even lighter gray for dark text in dark mode */
+  color: #e5e7eb !important;
+  /* even lighter gray for dark text in dark mode */
 }
 
 /* Enhance form elements in dark mode */

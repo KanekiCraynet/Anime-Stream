@@ -554,6 +554,20 @@ html(lang="id" class="scroll-smooth")
       const loadingScreen = document.getElementById('loadingScreen');
       const progressBar = document.getElementById('progressBar');
       
+      // Function to hide loading screen
+      function hideLoadingScreen() {
+        if (loadingScreen && loadingScreen.style.display !== 'none') {
+          loadingScreen.style.opacity = '0';
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            if (progressBar) progressBar.style.display = 'none';
+          }, 500);
+        }
+      }
+      
+      // Fallback: always hide after 5 seconds max
+      setTimeout(hideLoadingScreen, 5000);
+      
       // Simulate loading progress
       let progress = 0;
       const loadingInterval = setInterval(() => {
@@ -563,30 +577,19 @@ html(lang="id" class="scroll-smooth")
           clearInterval(loadingInterval);
           
           // Hide loading screen
-          setTimeout(() => {
-            loadingScreen.style.opacity = '0';
-            setTimeout(() => {
-              loadingScreen.style.display = 'none';
-            }, 500);
-          }, 300);
+          setTimeout(hideLoadingScreen, 300);
         }
         
-        progressBar.style.transform = `translateX(-${100 - progress}%)`;
+        if (progressBar) progressBar.style.transform = `translateX(-${100 - progress}%)`;
       }, 100);
 
       // Hide loading screen when page is fully loaded
       window.addEventListener('load', function() {
         document.body.classList.add('loaded');
         clearInterval(loadingInterval);
-        progressBar.style.transform = 'translateX(0)';
+        if (progressBar) progressBar.style.transform = 'translateX(0)';
         
-        setTimeout(() => {
-          loadingScreen.style.opacity = '0';
-          setTimeout(() => {
-            loadingScreen.style.display = 'none';
-            progressBar.style.display = 'none';
-          }, 500);
-        }, 300);
+        setTimeout(hideLoadingScreen, 300);
       });
 
       // Intersection Observer for animations

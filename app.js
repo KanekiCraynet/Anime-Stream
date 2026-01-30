@@ -23,39 +23,39 @@ const analyticsRoutes = require('./routes/analytics');
 
 const cookieConsent = require('./middleware/cookieConsent');
 const adSlots = require('./middleware/adSlots');
-const { 
-  apiLimiter, 
-  authLimiter, 
-  commentLimiter, 
-  searchLimiter, 
+const {
+  apiLimiter,
+  authLimiter,
+  commentLimiter,
+  searchLimiter,
   streamLimiter,
   speedLimiter,
   adminLimiter,
   dynamicLimiter,
-  ipBasedLimiter 
+  ipBasedLimiter
 } = require('./middleware/rateLimiter');
-const { 
-  sanitizeInput, 
-  xssProtection, 
-  sqlInjectionProtection, 
-  csrfProtection, 
-  securityHeaders, 
-  requestSizeLimit, 
-  fileUploadSecurity, 
-  ipFilter, 
-  userAgentValidation 
+const {
+  sanitizeInput,
+  xssProtection,
+  sqlInjectionProtection,
+  csrfProtection,
+  securityHeaders,
+  requestSizeLimit,
+  fileUploadSecurity,
+  ipFilter,
+  userAgentValidation
 } = require('./middleware/security');
-const { 
-  requestTiming, 
-  getMetrics, 
-  healthCheck 
+const {
+  requestTiming,
+  getMetrics,
+  healthCheck
 } = require('./middleware/performance');
-const { 
-  globalErrorHandler, 
-  notFoundHandler, 
+const {
+  globalErrorHandler,
+  notFoundHandler,
   asyncHandler,
   AppError,
-  fileUploadErrorHandler 
+  fileUploadErrorHandler
 } = require('./middleware/errorHandler');
 
 const { analyticsMiddleware } = require('./middleware/analytics');
@@ -77,11 +77,11 @@ const initDatabase = async () => {
       // Wait for database to be ready
       const { waitForDatabase } = require('./models/database');
       const dbReady = await waitForDatabase(10000); // Wait up to 10 seconds
-      
+
       if (!dbReady) {
         throw new Error('Database failed to initialize within timeout');
       }
-      
+
       console.log('Database initialized successfully');
       dbInitialized = true;
     } catch (error) {
@@ -242,6 +242,10 @@ app.use('/v1', (req, res, next) => {
 // Main routes - API routes first to avoid conflicts
 app.use('/v1', proxyRoutes);
 app.use('/api', apiLimiter, apiRoutes);
+
+// Redirect /genre to /genres (fix 404)
+app.get('/genre', (req, res) => res.redirect(301, '/genres'));
+
 app.use('/anime', animeRoutes);
 app.use('/admin', adminRoutes);
 app.use('/', indexRoutes);
@@ -264,12 +268,12 @@ app.use(globalErrorHandler);
 async function startServer() {
   try {
     await initDatabase();
-    
+
     // Now that database is ready, set up database-dependent middleware
     app.use(cookieConsent);
     app.use(adSlots);
     console.log('Database-dependent middleware set up successfully');
-    
+
     // Only start server if not in Vercel environment
     if (!process.env.VERCEL) {
       app.listen(PORT, () => {

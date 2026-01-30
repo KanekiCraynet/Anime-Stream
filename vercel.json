@@ -24,6 +24,10 @@
   },
   "builds": [
     {
+      "src": "public/**",
+      "use": "@vercel/static"
+    },
+    {
       "src": "api/index.js",
       "use": "@vercel/node"
     },
@@ -34,20 +38,34 @@
   ],
   "routes": [
     {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1"
+    },
+    {
+      "src": "/css/(.*)",
+      "dest": "/public/css/$1"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/public/images/$1"
+    },
+    {
+      "src": "/fonts/(.*)",
+      "dest": "/public/fonts/$1"
+    },
+    {
       "src": "/stream",
       "headers": {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Range, Content-Type",
-        "Cache-Control": "public, max-age=31536000"
+        "Access-Control-Allow-Headers": "Range, Content-Type"
       },
       "dest": "/app.js"
     },
     {
       "src": "/proxy",
       "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "public, max-age=3600"
+        "Access-Control-Allow-Origin": "*"
       },
       "dest": "/app.js"
     },

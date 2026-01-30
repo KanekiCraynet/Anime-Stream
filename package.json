@@ -39,7 +39,6 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.1",
-    "tailwindcss": "^4.1.18",
     "vercel": "^48.2.6"
   },
   "keywords": [

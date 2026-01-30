@@ -33,6 +33,14 @@ const getStreamUrl = ($) => {
 };
 
 const postToGetData = async (action, action2, videoData) => {
+    // Helper function with timeout
+    const fetchWithTimeout = async (promise, timeoutMs = 8000) => {
+        const timeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+        );
+        return Promise.race([promise, timeout]);
+    };
+
     const tasks = Object.entries(videoData).map(async ([key, value]) => {
         if (!value) return [key, null];
         try {
@@ -43,9 +51,11 @@ const postToGetData = async (action, action2, videoData) => {
             form.append("q", value.q);
             form.append("action", action);
 
-            let res = await axios.post(url, form.toString(), {
-                headers: { "Content-Type": "application/x-www-form-urlencoded" }
-            });
+            let res = await fetchWithTimeout(axios.post(url, form.toString(), {
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                timeout: 8000
+            }));
+
             const form2 = new URLSearchParams();
             form2.append("id", value.id);
             form2.append("i", value.i);
@@ -53,13 +63,15 @@ const postToGetData = async (action, action2, videoData) => {
             form2.append("action", action2);
             form2.append("nonce", res.data.data);
 
-            res = await axios.post(url, form2.toString(), {
-                headers: { "Content-Type": "application/x-www-form-urlencoded" }
-            });
+            res = await fetchWithTimeout(axios.post(url, form2.toString(), {
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                timeout: 8000
+            }));
+
             const $$ = load(Buffer.from(res.data.data, "base64").toString("utf8"));
             const pdrain_url = $$("iframe").attr("src");
 
-            const pdarin = await axios.get(pdrain_url);
+            const pdarin = await fetchWithTimeout(axios.get(pdrain_url, { timeout: 8000 }));
             const $$$ = load(pdarin.data);
             const finalUrl = $$$('meta[property="og:video:secure_url"]').attr("content");
 
@@ -73,6 +85,7 @@ const postToGetData = async (action, action2, videoData) => {
     const resultsArr = await Promise.all(tasks);
     return Object.fromEntries(resultsArr.filter(Boolean));
 };
+
 
 const getStreamQuality = async ($) => {
     const streamLable = $('.mirrorstream');

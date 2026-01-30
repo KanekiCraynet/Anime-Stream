@@ -280,7 +280,7 @@ router.get('/stream', async (req, res) => {
 
       const response = await axios.get(videoUrl, {
         responseType: 'stream',
-        timeout: 45000, // 45 second timeout
+        timeout: 15000, // 15 second timeout for faster failure
         maxRedirects: 5,
         headers,
         validateStatus: (status) => status < 400

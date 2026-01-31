@@ -2,12 +2,12 @@ const { addActivityLog } = require('../models/database');
 
 // Enhanced error handling middleware
 const errorHandler = {
-  
+
   // Global error handler
   globalErrorHandler: (err, req, res, next) => {
     const timestamp = new Date().toISOString();
     const errorId = `ERR_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // Log error details
     console.error(`[${timestamp}] Error ${errorId}:`, {
       message: err.message,
@@ -106,6 +106,14 @@ const errorHandler = {
     next(error);
   },
 
+  // Helper for rendering error pages in routes (DRY)
+  renderPageError: (res, status = 500, message = 'Terjadi kesalahan') => {
+    res.status(status).render('error', {
+      title: `${status === 404 ? 'Tidak Ditemukan' : 'Terjadi Kesalahan'} - KitaNime`,
+      error: { status, message }
+    });
+  },
+
   // Async error wrapper
   asyncHandler: (fn) => {
     return (req, res, next) => {
@@ -190,7 +198,7 @@ const errorHandler = {
   errorMonitor: {
     errors: [],
     maxErrors: 100,
-    
+
     recordError(error, req) {
       this.errors.push({
         timestamp: new Date().toISOString(),
@@ -201,18 +209,18 @@ const errorHandler = {
         ip: req.ip,
         userId: req.session?.userId
       });
-      
+
       // Keep only recent errors
       if (this.errors.length > this.maxErrors) {
         this.errors = this.errors.slice(-this.maxErrors);
       }
-      
+
       // Alert on critical errors
       if (error.status >= 500) {
         this.alertCriticalError(error, req);
       }
     },
-    
+
     alertCriticalError(error, req) {
       // In production, you would send alerts to monitoring services
       console.error('CRITICAL ERROR ALERT:', {
@@ -222,25 +230,25 @@ const errorHandler = {
         timestamp: new Date().toISOString()
       });
     },
-    
+
     getErrorStats() {
       const now = new Date();
       const lastHour = new Date(now.getTime() - 60 * 60 * 1000);
-      
-      const recentErrors = this.errors.filter(err => 
+
+      const recentErrors = this.errors.filter(err =>
         new Date(err.timestamp) > lastHour
       );
-      
+
       const errorCounts = {};
       recentErrors.forEach(err => {
         errorCounts[err.error] = (errorCounts[err.error] || 0) + 1;
       });
-      
+
       return {
         total: this.errors.length,
         lastHour: recentErrors.length,
         topErrors: Object.entries(errorCounts)
-          .sort(([,a], [,b]) => b - a)
+          .sort(([, a], [, b]) => b - a)
           .slice(0, 5)
           .map(([error, count]) => ({ error, count }))
       };

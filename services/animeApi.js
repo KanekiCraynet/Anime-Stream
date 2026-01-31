@@ -8,54 +8,17 @@ class AnimeApiService {
   constructor() {
     this.fallbackEndpointsPath = path.join(__dirname, '..', 'endpoint.json');
     this.apiResponsesPath = path.join(__dirname, '..', 'apiResponse');
-    this.cache = new Map();
-    this.cacheTimeout = 3 * 60 * 1000; // 3 minutes cache (reduced)
-    this.maxCacheSize = 50; // Maximum number of cached items (reduced)
-    this.retryAttempts = 1; // Reduced from 2
-    this.retryDelay = 300; // 0.3 second (reduced from 0.5 second)
-    this.requestTimeout = 5000; // 5 seconds (reduced from 8)
-    this.circuitBreakerThreshold = 3; // failures before circuit opens (reduced from 5)
-    this.circuitBreakerTimeout = 30000; // 30 seconds (reduced from 1 minute)
+    // Cache is now handled by cacheService
+    this.retryAttempts = 1;
+    this.retryDelay = 300; // 0.3 second
+    this.requestTimeout = 5000; // 5 seconds
+    this.circuitBreakerThreshold = 3;
+    this.circuitBreakerTimeout = 30000; // 30 seconds
     this.circuitBreakerState = 'CLOSED'; // CLOSED, OPEN, HALF_OPEN
     this.failureCount = 0;
     this.lastFailureTime = 0;
-
-    // Setup periodic cache cleanup to prevent memory leaks
-    this.setupCacheCleanup();
   }
 
-  setupCacheCleanup() {
-    // Clean cache every 5 minutes
-    setInterval(() => {
-      this.cleanupCache();
-    }, 5 * 60 * 1000);
-  }
-
-  cleanupCache() {
-    const now = Date.now();
-    const keysToDelete = [];
-
-    for (const [key, value] of this.cache.entries()) {
-      if (now - value.timestamp > this.cacheTimeout) {
-        keysToDelete.push(key);
-      }
-    }
-
-    keysToDelete.forEach(key => this.cache.delete(key));
-
-    // If cache is still too large, remove oldest entries
-    if (this.cache.size > this.maxCacheSize) {
-      const entries = Array.from(this.cache.entries());
-      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-
-      const toRemove = entries.slice(0, this.cache.size - this.maxCacheSize);
-      toRemove.forEach(([key]) => this.cache.delete(key));
-    }
-
-    if (keysToDelete.length > 0) {
-      console.log(`Cleaned up ${keysToDelete.length} expired cache entries`);
-    }
-  }
   async getApiBaseUrl() {
     try {
       // Priority: ENV -> DB -> endpoint.json -> production default
@@ -98,34 +61,6 @@ class AnimeApiService {
         ? 'https://anime-stream-red.vercel.app/v1'
         : 'https://anime-stream-red.vercel.app/v1';
     }
-  }
-
-  // Cache management methods
-  getCacheKey(endpoint, params = {}) {
-    return `${endpoint}_${JSON.stringify(params)}`;
-  }
-
-  getFromCache(key) {
-    const cached = this.cache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
-      return cached.data;
-    }
-    if (cached) {
-      this.cache.delete(key);
-    }
-    return null;
-  }
-
-  setCache(key, data) {
-    // Implement LRU cache eviction
-    if (this.cache.size >= this.maxCacheSize) {
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
-    }
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now()
-    });
   }
 
   // Circuit Breaker Pattern

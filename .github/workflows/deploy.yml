@@ -5,13 +5,15 @@ on:
     branches: [main]
   workflow_dispatch:
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Only run if Vercel secrets are configured
+    if: ${{ secrets.VERCEL_TOKEN != '' }}
+    
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     
     steps:
       - name: Checkout code
@@ -41,18 +43,15 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Deployed to production successfully" >> $GITHUB_STEP_SUMMARY
 
-  notify:
+  skip-notice:
     runs-on: ubuntu-latest
-    needs: deploy
-    if: always()
-    
+    if: ${{ secrets.VERCEL_TOKEN == '' }}
     steps:
-      - name: Notify on Success
-        if: needs.deploy.result == 'success'
-        run: echo "Deployment succeeded!"
-      
-      - name: Notify on Failure
-        if: needs.deploy.result == 'failure'
+      - name: Deployment Skipped
         run: |
-          echo "::error::Deployment failed!"
-          exit 1
+          echo "## ⚠️ Deployment Skipped" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Vercel secrets not configured. Add these secrets to enable auto-deploy:" >> $GITHUB_STEP_SUMMARY
+          echo "- VERCEL_TOKEN" >> $GITHUB_STEP_SUMMARY
+          echo "- VERCEL_ORG_ID" >> $GITHUB_STEP_SUMMARY
+          echo "- VERCEL_PROJECT_ID" >> $GITHUB_STEP_SUMMARY

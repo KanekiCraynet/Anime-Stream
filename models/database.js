@@ -2,6 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
+const logger = require('../services/logger');
 
 // Handle database path for different environments
 const isVercel = process.env.VERCEL === '1';
@@ -11,7 +12,7 @@ if (isVercel) {
   // In Vercel, use /tmp directory which is writable
   dataDir = '/tmp';
   dbPath = path.join(dataDir, 'kitanime.db');
-  console.log('Using /tmp directory for database in Vercel environment');
+  logger.info('Using /tmp directory for database in Vercel environment');
 } else {
   // Local development - use data directory
   dataDir = path.join(__dirname, '..', 'data');
@@ -19,7 +20,7 @@ if (isVercel) {
     try { fs.mkdirSync(dataDir, { recursive: true }); } catch (e) { /* ignore */ }
   }
   dbPath = path.join(dataDir, 'kitanime.db');
-  console.log('Using local data directory for database');
+  logger.info('Using local data directory for database');
 }
 
 // Create database connection with proper error handling
@@ -31,20 +32,20 @@ const createDatabaseConnection = () => {
   return new Promise((resolve, reject) => {
     db = new sqlite3.Database(dbPath, (err) => {
       if (err) {
-        console.error('Error opening database:', err.message);
+        logger.error('Error opening database:', err.message);
         reject(err);
       } else {
-        console.log('Connected to SQLite database');
-        
+        logger.info('Connected to SQLite database');
+
         // Configure database settings optimized for production
         db.serialize(() => {
           const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
-          
+
           // Enable WAL mode for better concurrent access
           db.run('PRAGMA journal_mode=WAL');
           // Enable foreign keys
           db.run('PRAGMA foreign_keys=ON');
-          
+
           if (isProduction) {
             // Production optimizations
             db.run('PRAGMA synchronous=NORMAL');
@@ -65,7 +66,7 @@ const createDatabaseConnection = () => {
             db.run('PRAGMA page_size=4096');
             db.run('PRAGMA optimize');
           }
-          
+
           // Mark database as ready
           dbReady = true;
           resolve(db);
@@ -82,14 +83,14 @@ createDatabaseConnection()
     try {
       await initializeDatabase();
       dbInitialized = true;
-      console.log('Database and tables initialized successfully');
+      logger.info('Database and tables initialized successfully');
     } catch (err) {
-      console.error('Failed to initialize database tables:', err);
+      logger.error('Failed to initialize database tables:', err);
       dbInitialized = false;
     }
   })
   .catch(err => {
-    console.error('Failed to create database connection:', err);
+    logger.error('Failed to create database connection:', err);
     dbReady = false;
     dbInitialized = false;
   });
@@ -99,7 +100,7 @@ const connectionPool = {
   connections: [],
   maxConnections: 5,
   activeConnections: 0,
-  
+
   async getConnection() {
     if (this.activeConnections < this.maxConnections) {
       this.activeConnections++;
@@ -108,7 +109,7 @@ const connectionPool = {
     // In a real implementation, you'd queue requests or create new connections
     return db;
   },
-  
+
   releaseConnection() {
     this.activeConnections = Math.max(0, this.activeConnections - 1);
   }
@@ -121,11 +122,11 @@ const executeQuery = (query, params = []) => {
     db.all(query, params, (err, rows) => {
       const duration = Date.now() - startTime;
       if (err) {
-        console.error(`Query failed (${duration}ms):`, query, err.message);
+        logger.error(`Query failed (${duration}ms):`, query, err.message);
         reject(err);
       } else {
         if (duration > 100) { // Log slow queries
-          console.warn(`Slow query detected (${duration}ms):`, query);
+          logger.warn(`Slow query detected (${duration}ms):`, query);
         }
         resolve(rows || []);
       }
@@ -139,11 +140,11 @@ const executeQuerySingle = (query, params = []) => {
     db.get(query, params, (err, row) => {
       const duration = Date.now() - startTime;
       if (err) {
-        console.error(`Query failed (${duration}ms):`, query, err.message);
+        logger.error(`Query failed (${duration}ms):`, query, err.message);
         reject(err);
       } else {
         if (duration > 100) {
-          console.warn(`Slow query detected (${duration}ms):`, query);
+          logger.warn(`Slow query detected (${duration}ms):`, query);
         }
         resolve(row || null);
       }
@@ -154,14 +155,14 @@ const executeQuerySingle = (query, params = []) => {
 const executeUpdate = (query, params = []) => {
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
-    db.run(query, params, function(err) {
+    db.run(query, params, function (err) {
       const duration = Date.now() - startTime;
       if (err) {
-        console.error(`Update failed (${duration}ms):`, query, err.message);
+        logger.error(`Update failed (${duration}ms):`, query, err.message);
         reject(err);
       } else {
         if (duration > 100) {
-          console.warn(`Slow update detected (${duration}ms):`, query);
+          logger.warn(`Slow update detected (${duration}ms):`, query);
         }
         resolve({ changes: this.changes, lastID: this.lastID });
       }
@@ -344,7 +345,7 @@ async function initializeDatabase() {
       db.run(`CREATE INDEX IF NOT EXISTS idx_api_endpoints_active ON api_endpoints(is_active)`);
       db.run(`CREATE INDEX IF NOT EXISTS idx_ad_slots_position ON ad_slots(position)`);
       db.run(`CREATE INDEX IF NOT EXISTS idx_ad_slots_active ON ad_slots(is_active)`);
-      
+
       // Comments system indexes
       db.run(`CREATE INDEX IF NOT EXISTS idx_comments_anime_slug ON comments(anime_slug)`);
       db.run(`CREATE INDEX IF NOT EXISTS idx_comments_user_id ON comments(user_id)`);
@@ -355,7 +356,7 @@ async function initializeDatabase() {
       db.run(`CREATE INDEX IF NOT EXISTS idx_comment_likes_comment_id ON comment_likes(comment_id)`);
       db.run(`CREATE INDEX IF NOT EXISTS idx_comment_reports_comment_id ON comment_reports(comment_id)`);
       db.run(`CREATE INDEX IF NOT EXISTS idx_comment_reports_status ON comment_reports(status)`);
-      
+
       // User preferences and watch history indexes
       db.run(`CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user_id)`);
       db.run(`CREATE INDEX IF NOT EXISTS idx_watch_history_user_id ON watch_history(user_id)`);
@@ -384,7 +385,7 @@ const ensureColumnsExist = () => {
     console.log('Database not ready, skipping column check');
     return;
   }
-  
+
   try {
     db.get("PRAGMA table_info(users)", (err, row) => {
       if (!err) {
@@ -581,10 +582,10 @@ const dbHelpers = {
         }
 
         db.run("UPDATE api_endpoints SET url = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-          [url, isActive ? 1 : 0, id], function(err) {
-          if (err) reject(err);
-          else resolve(this.changes);
-        });
+          [url, isActive ? 1 : 0, id], function (err) {
+            if (err) reject(err);
+            else resolve(this.changes);
+          });
       });
     });
   },
@@ -610,26 +611,26 @@ const dbHelpers = {
   addAdSlot: (name, position, type, content, isActive) => {
     return new Promise((resolve, reject) => {
       db.run("INSERT INTO ad_slots (name, position, type, content, is_active) VALUES (?, ?, ?, ?, ?)",
-        [name, position, type, content, isActive ? 1 : 0], function(err) {
-        if (err) reject(err);
-        else resolve(this.lastID);
-      });
+        [name, position, type, content, isActive ? 1 : 0], function (err) {
+          if (err) reject(err);
+          else resolve(this.lastID);
+        });
     });
   },
 
   updateAdSlot: (id, name, position, type, content, isActive) => {
     return new Promise((resolve, reject) => {
       db.run("UPDATE ad_slots SET name = ?, position = ?, type = ?, content = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-        [name, position, type, content, isActive ? 1 : 0, id], function(err) {
-        if (err) reject(err);
-        else resolve(this.changes);
-      });
+        [name, position, type, content, isActive ? 1 : 0, id], function (err) {
+          if (err) reject(err);
+          else resolve(this.changes);
+        });
     });
   },
 
   deleteAdSlot: (id) => {
     return new Promise((resolve, reject) => {
-      db.run("DELETE FROM ad_slots WHERE id = ?", [id], function(err) {
+      db.run("DELETE FROM ad_slots WHERE id = ?", [id], function (err) {
         if (err) reject(err);
         else resolve(this.changes);
       });
@@ -657,10 +658,10 @@ const dbHelpers = {
   updateSetting: (key, value) => {
     return new Promise((resolve, reject) => {
       db.run("UPDATE settings SET value = ?, updated_at = CURRENT_TIMESTAMP WHERE key = ?",
-        [value, key], function(err) {
-        if (err) reject(err);
-        else resolve(this.changes);
-      });
+        [value, key], function (err) {
+          if (err) reject(err);
+          else resolve(this.changes);
+        });
     });
   },
 
@@ -692,7 +693,7 @@ const dbHelpers = {
         }
 
         Object.entries(settings).forEach(([key, value]) => {
-          stmt.run([value, key], function(err) {
+          stmt.run([value, key], function (err) {
             if (err) {
               reject(err);
               return;
@@ -713,10 +714,10 @@ const dbHelpers = {
     const passwordHash = await bcrypt.hash(password, 10);
     return new Promise((resolve, reject) => {
       db.run("INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
-        [name, email, passwordHash], function(err) {
-        if (err) reject(err);
-        else resolve({ id: this.lastID, name, email });
-      });
+        [name, email, passwordHash], function (err) {
+          if (err) reject(err);
+          else resolve({ id: this.lastID, name, email });
+        });
     });
   },
 
@@ -743,7 +744,7 @@ const dbHelpers = {
       db.run(
         "UPDATE users SET name = ?, email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
         [name, email, id],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else resolve(this.changes);
         }
@@ -756,7 +757,7 @@ const dbHelpers = {
       db.run(
         "UPDATE users SET avatar_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
         [avatarUrl, id],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else resolve(this.changes);
         }
@@ -773,7 +774,7 @@ const dbHelpers = {
           const ok = await bcrypt.compare(oldPassword, row.password_hash);
           if (!ok) return reject(new Error('INVALID_OLD_PASSWORD'));
           const newHash = await bcrypt.hash(newPassword, 10);
-          db.run("UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [newHash, id], function(e2){
+          db.run("UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [newHash, id], function (e2) {
             if (e2) reject(e2); else resolve(this.changes);
           });
         } catch (e) { reject(e); }
@@ -787,7 +788,7 @@ const dbHelpers = {
       db.run(
         "INSERT OR IGNORE INTO bookmarks (user_id, anime_id, anime_title, anime_slug, poster_url) VALUES (?, ?, ?, ?, ?)",
         [userId, animeId, animeTitle, animeSlug, posterUrl],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else resolve(this.lastID);
         }
@@ -797,7 +798,7 @@ const dbHelpers = {
 
   removeBookmark: (userId, animeId) => {
     return new Promise((resolve, reject) => {
-      db.run("DELETE FROM bookmarks WHERE user_id = ? AND anime_id = ?", [userId, animeId], function(err) {
+      db.run("DELETE FROM bookmarks WHERE user_id = ? AND anime_id = ?", [userId, animeId], function (err) {
         if (err) reject(err);
         else resolve(this.changes);
       });
@@ -832,7 +833,7 @@ const dbHelpers = {
       db.run(
         "INSERT INTO activity_logs (user_id, user_type, action, description, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?)",
         [userId, userType, action, description, ipAddress, userAgent],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else resolve(this.lastID);
         }
@@ -894,7 +895,7 @@ const dbHelpers = {
       db.run(
         "INSERT INTO comments (user_id, anime_slug, episode_number, parent_id, content) VALUES (?, ?, ?, ?, ?)",
         [userId, animeSlug, episodeNumber, parentId, content],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else resolve(this.lastID);
         }
@@ -952,7 +953,7 @@ const dbHelpers = {
       db.run(
         "INSERT OR IGNORE INTO comment_likes (user_id, comment_id) VALUES (?, ?)",
         [userId, commentId],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else {
             // Update likes count
@@ -975,7 +976,7 @@ const dbHelpers = {
       db.run(
         "DELETE FROM comment_likes WHERE user_id = ? AND comment_id = ?",
         [userId, commentId],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else {
             // Update likes count
@@ -1011,7 +1012,7 @@ const dbHelpers = {
       db.run(
         "INSERT INTO comment_reports (user_id, comment_id, reason, description) VALUES (?, ?, ?, ?)",
         [userId, commentId, reason, description],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else resolve(this.lastID);
         }
@@ -1024,7 +1025,7 @@ const dbHelpers = {
       db.run(
         "DELETE FROM comments WHERE id = ? AND user_id = ?",
         [commentId, userId],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else resolve(this.changes);
         }
@@ -1050,7 +1051,7 @@ const dbHelpers = {
          (user_id, theme, auto_play_next, video_quality, comment_notifications, email_notifications, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
         [userId, theme, auto_play_next, video_quality, comment_notifications, email_notifications],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else resolve(this.changes);
         }
@@ -1066,7 +1067,7 @@ const dbHelpers = {
          (user_id, anime_slug, episode_number, watch_time, total_duration, completed, last_watched)
          VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
         [userId, animeSlug, episodeNumber, watchTime, totalDuration, completed],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else resolve(this.changes);
         }
@@ -1113,7 +1114,7 @@ const dbHelpers = {
         `INSERT OR REPLACE INTO anime_ratings (user_id, anime_slug, rating, review, updated_at)
          VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
         [userId, animeSlug, rating, review],
-        function(err) {
+        function (err) {
           if (err) reject(err);
           else resolve(this.lastID);
         }

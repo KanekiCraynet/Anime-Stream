@@ -22,16 +22,6 @@
     "ENABLE_COMPRESSION": "true",
     "VERCEL_ANALYTICS_ID": "prj_anime-stream-red"
   },
-  "functions": {
-    "app.js": {
-      "memory": 1024,
-      "maxDuration": 10
-    },
-    "api/index.js": {
-      "memory": 512,
-      "maxDuration": 10
-    }
-  },
   "builds": [
     {
       "src": "public/**",
@@ -39,11 +29,17 @@
     },
     {
       "src": "api/index.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
     },
     {
       "src": "app.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
     }
   ],
   "routes": [

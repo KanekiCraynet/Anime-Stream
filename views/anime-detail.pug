@@ -1,94 +1,166 @@
 extends layout
 
 block content
-  div(class="min-h-screen bg-gray-50 dark:bg-gray-900")
-    div(class="container mx-auto px-3 sm:px-4 py-4 sm:py-6")
-      div(class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8")
-        div(class="lg:col-span-3 space-y-4 sm:space-y-6")
-          div(class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden")
-            div(class="md:flex")
-              div(class="md:flex-shrink-0 relative")
-                img(src=anime.poster alt=anime.title class="h-64 w-full object-cover md:h-full md:w-56 transition-transform duration-300 transform rounded-l-xl" onerror="this.onerror=null;this.src='https://placehold.co/400x600?text=No+Image';")
-                div(class="absolute inset-0 bg-black/20 dark:bg-white/10")
-              div(class="p-6 flex-1 flex flex-col justify-between")
-                div
-                  h1(class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2")= anime.title
-                  div(class="flex flex-wrap gap-4 mb-4")
-                    if anime.status
-                      span(class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 dark:bg-primary-200 dark:text-primary-900")= anime.status
-                    if anime.rating
-                      div(class="flex items-center")
-                        svg(class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20")
-                          path(d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z")
-                        span(class="text-sm font-medium text-gray-700 dark:text-gray-200")= anime.rating
-                    
-                    if averageRating && averageRating.total_ratings > 0
-                      div(class="flex items-center ml-4")
-                        svg(class="w-4 h-4 text-blue-400 mr-1" fill="currentColor" viewBox="0 0 20 20")
-                          path(d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z")
-                        span(class="text-sm font-medium text-gray-700 dark:text-gray-200")= `${averageRating.average_rating.toFixed(1)} (${averageRating.total_ratings} rating)`
-                    
-                    if anime.release_year
-                      span(class="text-sm text-gray-500 dark:text-gray-400")= anime.release_year
-                if anime.genres && anime.genres.length > 0
-                  div(class="mb-4")
-                    h3(class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2") Genre:
-                    div(class="flex flex-wrap gap-2")
-                      each genre in anime.genres
-                        a(href=`/genres/${genre.slug}` class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs rounded hover:bg-primary-100 dark:hover:bg-primary-700 hover:text-primary-700 dark:hover:text-primary-200 transition-colors")= genre.slug
-                if anime.synopsis
-                  div(class="mb-4")
-                    h3(class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2") Sinopsis:
-                    p(class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed")= anime.synopsis
-                div(class="flex flex-wrap gap-3 mt-4")
-                  if anime.batch_links && anime.batch_links.length > 0
-                    a(href=`/anime/${anime.slug}/batch` class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium") Download Batch
-                  if currentUser
-                    button(
-                      id="bookmarkBtn"
-                      data-id=anime.id
-                      data-title=anime.title
-                      data-slug=anime.slug
-                      data-poster=anime.poster
-                      class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
-                    )
-                      | Simpan Bookmark
-                  else
-                    a(href=`/auth/login?next=/anime/${anime.slug}` class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium")
-                      | Masuk untuk Bookmark
+  //- Hero Section dengan Backdrop Blur
+  div(class="min-h-screen")
+    //- Hero Banner dengan Poster Background Blur
+    div(class="relative overflow-hidden")
+      //- Background blur dari poster
+      div(class="absolute inset-0 z-0")
+        img(src=anime.poster alt="" class="w-full h-full object-cover scale-110 blur-2xl opacity-30" onerror="this.style.display='none'")
+        div(class="absolute inset-0 bg-gradient-to-b from-gray-900/60 via-gray-900/80 to-gray-900 dark:from-gray-950/60 dark:via-gray-950/80 dark:to-gray-950")
+      
+      //- Content Container
+      div(class="container mx-auto px-4 sm:px-6 py-8 sm:py-12 relative z-10")
+        div(class="flex flex-col lg:flex-row gap-6 lg:gap-10")
+          //- Poster dengan Glow Effect
+          div(class="flex-shrink-0 mx-auto lg:mx-0")
+            div(class="relative group")
+              //- Glow effect
+              div(class="absolute -inset-1 bg-gradient-to-r from-primary-500 via-purple-500 to-pink-500 rounded-2xl blur opacity-40 group-hover:opacity-60 transition-opacity duration-500")
+              //- Poster
+              img(src=anime.poster alt=anime.title class="relative w-48 sm:w-56 lg:w-64 h-auto rounded-xl shadow-2xl object-cover transition-transform duration-500 group-hover:scale-[1.02]" onerror="this.onerror=null;this.src='https://placehold.co/400x600?text=No+Image';")
+              //- Play Button Overlay
+              a(href=anime.episodes && anime.episodes.length > 0 ? `/anime/${anime.slug}/episode/1` : '#' class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-xl")
+                div(class="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition-all duration-300")
+                  svg(class="w-8 h-8 text-primary-600 ml-1" fill="currentColor" viewBox="0 0 20 20")
+                    path(d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z")
+          
+          //- Anime Info
+          div(class="flex-1 text-center lg:text-left")
+            //- Title
+            h1(class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight")= anime.title
+            
+            //- Meta Info Badges
+            div(class="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-5")
+              if anime.status
+                span(class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30")
+                  svg(class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewBox="0 0 20 20")
+                    path(fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd")
+                  span= anime.status
+              if anime.rating
+                span(class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30")
+                  svg(class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewBox="0 0 20 20")
+                    path(d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z")
+                  span= anime.rating
+              if averageRating && averageRating.total_ratings > 0
+                span(class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30")
+                  svg(class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewBox="0 0 20 20")
+                    path(d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z")
+                  span= `${averageRating.average_rating.toFixed(1)} (${averageRating.total_ratings})`
+              if anime.release_year
+                span(class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-white/10 backdrop-blur-sm text-white border border-white/20")
+                  svg(class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                    path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z")
+                  span= anime.release_year
+            
+            //- Genre Pills
+            if anime.genres && anime.genres.length > 0
+              div(class="mb-6")
+                div(class="flex flex-wrap items-center justify-center lg:justify-start gap-2")
+                  each genre, index in anime.genres
+                    a(href=`/genres/${genre.slug}` class="group relative px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 overflow-hidden bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40 hover:shadow-lg hover:shadow-primary-500/20 hover:-translate-y-0.5")
+                      span(class="relative z-10")= genre.slug || genre.name
+            
+            //- Synopsis
+            if anime.synopsis
+              div(class="mb-6")
+                p(class="text-gray-300 text-sm sm:text-base leading-relaxed line-clamp-4 lg:line-clamp-none max-w-2xl mx-auto lg:mx-0")= anime.synopsis
+            
+            //- Action Buttons
+            div(class="flex flex-wrap items-center justify-center lg:justify-start gap-3")
+              if anime.episodes && anime.episodes.length > 0
+                a(href=`/anime/${anime.slug}/episode/1` class="inline-flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-purple-600 text-white font-semibold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transform hover:-translate-y-0.5 transition-all duration-300")
+                  svg(class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20")
+                    path(d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z")
+                  span Tonton Sekarang
+              if anime.batch_links && anime.batch_links.length > 0
+                a(href=`/anime/${anime.slug}/batch` class="inline-flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transform hover:-translate-y-0.5 transition-all duration-300")
+                  svg(class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                    path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4")
+                  span Download Batch
+              if currentUser
+                button(
+                  id="bookmarkBtn"
+                  data-id=anime.id
+                  data-title=anime.title
+                  data-slug=anime.slug
+                  data-poster=anime.poster
+                  class="inline-flex items-center px-6 py-3 rounded-xl bg-white/10 backdrop-blur-sm text-white font-semibold border border-white/20 hover:bg-white/20 hover:border-white/30 transform hover:-translate-y-0.5 transition-all duration-300"
+                )
+                  svg(class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                    path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z")
+                  span Bookmark
+              else
+                a(href=`/auth/login?next=/anime/${anime.slug}` class="inline-flex items-center px-6 py-3 rounded-xl bg-white/10 backdrop-blur-sm text-white font-semibold border border-white/20 hover:bg-white/20 hover:border-white/30 transform hover:-translate-y-0.5 transition-all duration-300")
+                  svg(class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                    path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1")
+                  span Masuk untuk Bookmark
 
-          // Rating Section
+    //- Main Content Area
+    div(class="container mx-auto px-3 sm:px-4 py-6 sm:py-8")
+      div(class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8")
+        //- Main Content
+        div(class="lg:col-span-3 space-y-6")
+          //- Rating Section
           if currentUser
-            div(class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6")
-              h3(class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4") Beri Rating
+            div(class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-6")
+              h3(class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center")
+                svg(class="w-5 h-5 mr-2 text-amber-500" fill="currentColor" viewBox="0 0 20 20")
+                  path(d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z")
+                span Beri Rating
               div(class="flex items-center space-x-4")
                 div(class="flex items-center space-x-1")
                   - for (let i = 1; i <= 10; i++)
                     button(
-                      class=`rating-star w-8 h-8 transition-colors ${userRating && userRating.rating >= i ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-300'}`
+                      class=`rating-star w-8 h-8 transition-all duration-200 transform hover:scale-110 ${userRating && userRating.rating >= i ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-300'}`
                       data-rating=i
                       data-anime-slug=anime.slug
                     )
                       svg(fill="currentColor" viewBox="0 0 20 20")
                         path(d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z")
-                span(class="text-sm text-gray-600 dark:text-gray-400")= userRating ? `Rating Anda: ${userRating.rating}/10` : 'Pilih rating'
+                span(class="text-sm text-gray-600 dark:text-gray-400 font-medium")= userRating ? `Rating Anda: ${userRating.rating}/10` : 'Pilih rating'
               if userRating && userRating.review
-                div(class="mt-4")
+                div(class="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl")
                   h4(class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2") Review Anda:
                   p(class="text-sm text-gray-600 dark:text-gray-400")= userRating.review
 
+          //- Episode List Section
           if anime.episodes && anime.episodes.length > 0
-            div(class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6")
-              h2(class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4") Daftar Episode
-              div(class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3")
-                each episode in anime.episodes.slice(0, 24)
-                  a(href=`/anime/${anime.slug}/episode/${episode.episode}` class="bg-gray-50 dark:bg-gray-700 hover:bg-primary-50 dark:hover:bg-primary-600 border border-gray-200 dark:border-gray-600 hover:border-primary-200 dark:hover:border-primary-400 rounded-lg p-3 text-center transition-colors")
-                    div(class="text-sm font-medium text-gray-900 dark:text-gray-100") Episode #{episode.episode}
-                    if episode.release_date
-                      div(class="text-xs text-gray-500 dark:text-gray-400 mt-1")= episode.release_date
+            div(class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-6")
+              div(class="flex items-center justify-between mb-6")
+                h2(class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center")
+                  svg(class="w-6 h-6 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                    path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16")
+                  span Daftar Episode
+                span(class="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full")= `${anime.episodes.length} Episode`
+              
+              //- Episode Grid dengan Card Modern
+              div(class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3")
+                each episode, index in anime.episodes.slice(0, 24)
+                  a(href=`/anime/${anime.slug}/episode/${episode.episode}` class="group relative")
+                    div(class="relative bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-4 border border-gray-200/50 dark:border-gray-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary-500/20 hover:border-primary-400/50 hover:-translate-y-1 overflow-hidden")
+                      //- New Badge
+                      if index < 2
+                        div(class="absolute -top-1 -right-1 w-12 h-12")
+                          div(class="absolute transform rotate-45 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-bold py-0.5 right-[-22px] top-[8px] w-[70px] text-center shadow-sm") NEW
+                      //- Episode Number
+                      div(class="text-center")
+                        div(class="text-2xl font-bold bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent mb-1")= episode.episode
+                        div(class="text-xs text-gray-500 dark:text-gray-400 font-medium") Episode
+                      //- Play Icon on Hover
+                      div(class="absolute inset-0 flex items-center justify-center bg-primary-600/90 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-xl")
+                        svg(class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20")
+                          path(d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z")
+              
+              //- Show More Button
               if anime.episodes.length > 24
-                div(class="mt-4 text-center")
-                  a(href=`/anime/${anime.slug}/episodes` class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-200 font-medium") Lihat Semua Episode
+                div(class="mt-6 text-center")
+                  a(href=`/anime/${anime.slug}/episodes` class="inline-flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-purple-600 text-white font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300")
+                    span Lihat Semua Episode
+                    svg(class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                      path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3")
+
 
           // Comments Section
           div(class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6")

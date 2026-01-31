@@ -36,7 +36,8 @@
     "pug": "^3.0.3",
     "serverless-http": "^3.2.0",
     "sqlite3": "^5.1.7",
-    "validator": "^13.11.0"
+    "validator": "^13.11.0",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",

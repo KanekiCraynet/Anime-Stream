@@ -3,6 +3,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { getActiveApiEndpoint } = require('../models/database');
 const cacheService = require('./cacheService');
+const logger = require('./logger');
 
 class AnimeApiService {
   constructor() {
@@ -35,7 +36,7 @@ class AnimeApiService {
             return dbUrl.replace(/\/$/, '');
           }
         } catch (dbError) {
-          console.log('Database not available, using environment fallback');
+          logger.debug('Database not available, using environment fallback');
         }
       }
 
@@ -48,7 +49,7 @@ class AnimeApiService {
           return fileUrl.replace(/\/$/, '');
         }
       } catch (error) {
-        console.warn('Could not read endpoint.json, using production default');
+        logger.warn('Could not read endpoint.json, using production default');
       }
 
       // Production default
@@ -56,7 +57,7 @@ class AnimeApiService {
         ? 'https://anime-stream-red.vercel.app/v1'
         : 'https://anime-stream-red.vercel.app/v1';
     } catch (error) {
-      console.error('Error getting API base URL:', error);
+      logger.error('Error getting API base URL:', error);
       return process.env.VERCEL === '1'
         ? 'https://anime-stream-red.vercel.app/v1'
         : 'https://anime-stream-red.vercel.app/v1';
@@ -95,7 +96,7 @@ class AnimeApiService {
     } catch (error) {
       if (attempt < this.retryAttempts && this.shouldRetry(error)) {
         const delay = this.retryDelay * Math.pow(2, attempt - 1);
-        console.log(`Retrying request in ${delay}ms (attempt ${attempt + 1}/${this.retryAttempts})`);
+        logger.debug(`Retrying request in ${delay}ms (attempt ${attempt + 1}/${this.retryAttempts})`);
         await this.sleep(delay);
         return this.retryRequest(requestFn, attempt + 1);
       }
@@ -124,19 +125,19 @@ class AnimeApiService {
       const cacheKey = cacheService.generateApiKey(endpoint, params);
       const cachedData = await cacheService.get(cacheKey, 'api');
       if (cachedData) {
-        console.log(`Cache hit for: ${endpoint}`);
+        logger.debug(`Cache hit for: ${endpoint}`);
         return cachedData;
       }
 
       // Check circuit breaker
       if (this.isCircuitOpen()) {
-        console.log(`Circuit breaker is OPEN for ${endpoint}, using fallback data`);
+        logger.warn(`Circuit breaker is OPEN for ${endpoint}, using fallback data`);
         return await this.loadMockData(endpoint, params);
       }
 
       // For ongoing anime, try mock data first if API is slow
       if (endpoint.includes('ongoing') && this.failureCount > 0) {
-        console.log(`Using mock data for ${endpoint} due to previous failures`);
+        logger.debug(`Using mock data for ${endpoint} due to previous failures`);
         return await this.loadMockData(endpoint, params);
       }
 
@@ -147,7 +148,7 @@ class AnimeApiService {
         url = `${baseUrl}/ongoing-anime/${params.page}`;
       }
 
-      console.log(`Making API request to: ${url}`);
+      logger.debug(`Making API request to: ${url}`);
 
       // Use retry mechanism with circuit breaker
       const result = await this.retryRequest(async () => {
@@ -191,7 +192,7 @@ class AnimeApiService {
       return result;
 
     } catch (error) {
-      console.error(`API request failed for ${endpoint}:`, error.message);
+      logger.error(`API request failed for ${endpoint}:`, error.message);
       this.recordFailure();
 
       // Always fallback to mock data on failure
@@ -235,10 +236,10 @@ class AnimeApiService {
       const mockData = await fs.readFile(mockDataPath, 'utf8');
       const parsedData = JSON.parse(mockData);
 
-      console.log(`Using mock data from: ${filename}`);
+      logger.debug(`Using mock data from: ${filename}`);
       return parsedData.data || parsedData;
     } catch (error) {
-      console.error(`Failed to load mock data for ${endpoint}:`, error.message);
+      logger.error(`Failed to load mock data for ${endpoint}:`, error.message);
       return null;
     }
   }
@@ -253,7 +254,7 @@ class AnimeApiService {
       const cacheKey = cacheService.generateApiKey('/ongoing-anime', { page });
       const cachedData = await cacheService.get(cacheKey, 'api');
       if (cachedData) {
-        console.log(`Cache hit for ongoing anime page ${page}`);
+        logger.debug(`Cache hit for ongoing anime page ${page}`);
         return cachedData;
       }
 
@@ -268,7 +269,7 @@ class AnimeApiService {
 
       return result;
     } catch (error) {
-      console.log(`API failed for ongoing anime, using mock data: ${error.message}`);
+      logger.warn(`API failed for ongoing anime, using mock data: ${error.message}`);
       return await this.loadMockData('/ongoing-anime', { page });
     }
   }

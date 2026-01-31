@@ -8,6 +8,7 @@ const cors = require('cors');
 // Removed unused imports to reduce startup overhead
 const createSessionConfig = require('./config/session');
 const env = require('./config/env');
+const logger = require('./services/logger');
 
 const indexRoutes = require('./routes/index');
 const animeRoutes = require('./routes/anime');
@@ -82,10 +83,10 @@ const initDatabase = async () => {
         throw new Error('Database failed to initialize within timeout');
       }
 
-      console.log('Database initialized successfully');
+      logger.info('Database initialized successfully');
       dbInitialized = true;
     } catch (error) {
-      console.error('Failed to initialize database:', error);
+      logger.error('Failed to initialize database:', error);
       throw error;
     }
   }
@@ -130,7 +131,7 @@ app.use((req, res, next) => {
     res.on('finish', () => {
       const end = process.hrtime.bigint();
       const ms = Number(end - start) / 1e6;
-      console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} ${res.statusCode} - ${ms.toFixed(1)}ms`);
+      logger.debug(`${new Date().toISOString()}] ${req.method} ${req.url} ${res.statusCode} - ${ms.toFixed(1)}ms`);
     });
   }
   next();
@@ -247,7 +248,7 @@ app.get('/health', healthCheck);
 
 // Debug middleware for /v1 requests
 app.use('/v1', (req, res, next) => {
-  console.log(`🔍 /v1 request: ${req.method} ${req.url}`);
+  logger.debug(`/v1 request: ${req.method} ${req.url}`);
   next();
 });
 
@@ -284,17 +285,17 @@ async function startServer() {
     // Now that database is ready, set up database-dependent middleware
     app.use(cookieConsent);
     app.use(adSlots);
-    console.log('Database-dependent middleware set up successfully');
+    logger.info('Database-dependent middleware set up successfully');
 
     // Only start server if not in Vercel environment
     if (!process.env.VERCEL) {
       app.listen(PORT, () => {
-        console.log(`KitaNime server running on port ${PORT}`);
-        console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+        logger.info(`KitaNime server running on port ${PORT}`);
+        logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
       });
     }
   } catch (error) {
-    console.error('Failed to start server:', error);
+    logger.error('Failed to start server:', error);
     if (!process.env.VERCEL) {
       process.exit(1);
     }

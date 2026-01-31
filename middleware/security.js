@@ -1,12 +1,10 @@
 const helmet = require('helmet');
-// CSRF protection using express built-in csrf
-const csrf = require('express').csrf;
 const validator = require('validator');
 const rateLimit = require('express-rate-limit');
 
 // Enhanced security middleware
 const securityMiddleware = {
-  
+
   // Input validation and sanitization
   sanitizeInput: (req, res, next) => {
     // Recursively sanitize string inputs
@@ -106,35 +104,18 @@ const securityMiddleware = {
     if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') {
       return next();
     }
-    
+
     const token = req.body._csrf || req.headers['x-csrf-token'];
     const sessionToken = req.session.csrfSecret;
-    
+
     if (!token || !sessionToken || token !== sessionToken) {
       return res.status(403).json({ error: 'CSRF token mismatch' });
     }
-    
+
     next();
   },
 
-  // Content Security Policy
-  cspPolicy: helmet.contentSecurityPolicy({
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.tailwindcss.com", "https://cdn.plyr.io"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdn.plyr.io", "https://cdnjs.cloudflare.com", "https://pagead2.googlesyndication.com", "https://cdn.vercel-insights.com", "https://vitals.vercel-insights.com"],
-      scriptSrcElem: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdn.plyr.io", "https://cdnjs.cloudflare.com", "https://pagead2.googlesyndication.com", "https://cdn.vercel-insights.com", "https://vitals.vercel-insights.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:", "http:"],
-      mediaSrc: ["'self'", "https:", "http:"],
-      connectSrc: ["'self'", "https:", "http:", "https://vitals.vercel-insights.com", "https://pagead2.googlesyndication.com", "https://cdn.vercel-insights.com"],
-      frameSrc: ["'self'", "https:", "https://googleads.g.doubleclick.net"],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
-    }
-  }),
-
-  // Security headers optimized for production
+  // Security headers optimized for production (includes CSP)
   securityHeaders: helmet({
     contentSecurityPolicy: {
       directives: {
@@ -209,11 +190,11 @@ const securityMiddleware = {
   // IP whitelist/blacklist
   ipFilter: (req, res, next) => {
     const clientIP = req.ip || req.connection.remoteAddress;
-    
+
     // Blacklisted IPs
-    const blacklistedIPs = process.env.BLACKLISTED_IPS ? 
+    const blacklistedIPs = process.env.BLACKLISTED_IPS ?
       process.env.BLACKLISTED_IPS.split(',') : [];
-    
+
     if (blacklistedIPs.includes(clientIP)) {
       return res.status(403).json({ error: 'Access denied' });
     }
@@ -224,12 +205,12 @@ const securityMiddleware = {
   // User agent validation
   userAgentValidation: (req, res, next) => {
     const userAgent = req.get('User-Agent');
-    
+
     // Skip validation in development mode
     if (process.env.NODE_ENV === 'development') {
       return next();
     }
-    
+
     // Block requests with suspicious user agents
     const suspiciousPatterns = [
       /bot/i,

@@ -139,7 +139,7 @@ router.get('/:slug/episode/:episode', async (req, res) => {
     // Use episodeData directly instead of making another API call
     console.log('Episode data:', episodeData.next_episode);
     const modifiedStreamList = {};
-    var qlist = [];
+    const qlist = [];
 
     // Safely access steramList with fallback
     const streamList = episodeData.steramList || episodeData.streamList || {};
@@ -183,7 +183,7 @@ router.get('/:slug/episode/:episode', async (req, res) => {
       req.session.userId ? getWatchProgress(req.session.userId, slug) : null
     ]);
 
-    var episodeDatas = {
+    const episodeDatas = {
       title: `${sanitizedAnime.title} Episode ${episodeNumber} - KitaNime`,
       description: `Nonton ${sanitizedAnime.title} Episode ${episodeNumber} subtitle Indonesia`,
       anime: sanitizedAnime,

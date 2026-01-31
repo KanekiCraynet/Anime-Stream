@@ -612,7 +612,7 @@ router.get('/genres/:slug', async (req, res) => {
 router.get('/movies/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    var movieData = await animeApi.getMovies(page);
+    const movieData = await animeApi.getMovies(page);
     if (!movieData) {
       return res.status(404).render('error', {
         title: 'Tidak ada film anime - KitaNime',
@@ -646,7 +646,7 @@ router.get('/movies/:year/:month/:slug', async (req, res) => {
     const { year, month, slug } = req.params;
 
     const movieData = await animeApi.getMovieDetails(year, month, slug);
-    var movie = movieData?.data?.stream_url;
+    let movie = movieData?.data?.stream_url;
     movie = movie.split('/')[3];
     //https://www.mp4upload.com/embed-iwzh09efokfj.html
     movie = `https://www.mp4upload.com/embed-${movie}.html`;

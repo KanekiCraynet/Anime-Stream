@@ -141,8 +141,8 @@ router.get('/:slug/episode/:episode', async (req, res) => {
     const modifiedStreamList = {};
     const qlist = [];
 
-    // Safely access steramList with fallback
-    const streamList = episodeData.steramList || episodeData.streamList || {};
+    // Access streamList from episode data
+    const streamList = episodeData.streamList || {};
 
     // Check if we have any valid direct stream URLs (not iframe URLs)
     let hasDirectStream = false;

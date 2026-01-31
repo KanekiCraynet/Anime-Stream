@@ -4,17 +4,18 @@ const path = require('path');
 const { getActiveApiEndpoint } = require('../models/database');
 const cacheService = require('./cacheService');
 const logger = require('./logger');
+const env = require('../config/env');
 
 class AnimeApiService {
   constructor() {
     this.fallbackEndpointsPath = path.join(__dirname, '..', 'endpoint.json');
     this.apiResponsesPath = path.join(__dirname, '..', 'apiResponse');
-    // Cache is now handled by cacheService
-    this.retryAttempts = 1;
-    this.retryDelay = 300; // 0.3 second
-    this.requestTimeout = 5000; // 5 seconds
-    this.circuitBreakerThreshold = 3;
-    this.circuitBreakerTimeout = 30000; // 30 seconds
+    // Use centralized config from env.js
+    this.retryAttempts = env.retryAttempts;
+    this.retryDelay = env.retryDelay;
+    this.requestTimeout = env.apiTimeout;
+    this.circuitBreakerThreshold = env.circuitBreakerThreshold;
+    this.circuitBreakerTimeout = env.circuitBreakerTimeout;
     this.circuitBreakerState = 'CLOSED'; // CLOSED, OPEN, HALF_OPEN
     this.failureCount = 0;
     this.lastFailureTime = 0;

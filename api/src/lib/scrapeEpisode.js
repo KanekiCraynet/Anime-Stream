@@ -20,7 +20,7 @@ const scrapeEpisode = async (html) => {
         has_previous_episode: previous_episode ? true : false,
         previous_episode,
         stream_url: qualityList['480p'] || stream_url,
-        steramList: qualityList,
+        streamList: qualityList,
         download_urls,
     };
 };

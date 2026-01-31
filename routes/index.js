@@ -3,6 +3,7 @@ const router = express.Router();
 const animeApi = require('../services/animeApi');
 const cacheService = require('../services/cacheService');
 const { getSetting, getAllSettings } = require('../models/database');
+const logger = require('../services/logger');
 // Removed circular dependency - routes no longer needed from app.js
 const axios = require('axios');
 const cheerio = require('cheerio');
@@ -16,7 +17,7 @@ const getSourceVideo = async (url) => {
     const fetch = await axios.get(url);
     const $ = cheerio.load(fetch.data);
     let data;
-    console.log(host)
+    logger.debug('Video source host:', host);
     $('script').each((i, el) => {
       const content = $(el).html()?.trim();
       if (content && content.includes('VIDEO_CONFIG')) {
@@ -50,10 +51,10 @@ router.get('/', async (req, res) => {
 
     let homeData;
     if (cachedData) {
-      console.log('Cache hit for home data');
+      logger.cacheHit('home-data');
       homeData = cachedData;
     } else {
-      console.log('Cache miss for home data, fetching from API');
+      logger.cacheMiss('home-data');
 
       // Add timeout to prevent slow API from blocking
       const fetchWithTimeout = async () => {
@@ -70,7 +71,7 @@ router.get('/', async (req, res) => {
           await cacheService.set(cacheKey, homeData, 600, 'api');
         }
       } catch (apiError) {
-        console.error('Home API error:', apiError.message);
+        logger.apiError('Home API error:', apiError.message);
         homeData = null; // Will use empty arrays
       }
     }
@@ -83,7 +84,7 @@ router.get('/', async (req, res) => {
       currentPage: 'home'
     });
   } catch (error) {
-    console.error('Home page error:', error);
+    logger.error('Home page error:', error);
 
     // For production, provide more graceful error handling
     if (process.env.VERCEL === '1') {
@@ -120,7 +121,7 @@ router.get('/privacy-policy', async (req, res) => {
       currentPage: 'privacy-policy'
     });
   } catch (error) {
-    console.error('Privacy policy page error:', error);
+    logger.error('Privacy policy page error:', error);
     res.render('error', {
       title: 'Error - KitaNime',
       error: { status: 500, message: 'Tidak dapat memuat halaman kebijakan privasi' }
@@ -138,7 +139,7 @@ router.get('/terms-of-service', async (req, res) => {
       currentPage: 'terms-of-service'
     });
   } catch (error) {
-    console.error('Terms of service page error:', error);
+    logger.error('Terms of service page error:', error);
     res.render('error', {
       title: 'Error - KitaNime',
       error: { status: 500, message: 'Tidak dapat memuat halaman syarat dan ketentuan' }
@@ -156,7 +157,7 @@ router.get('/dmca', async (req, res) => {
       currentPage: 'dmca'
     });
   } catch (error) {
-    console.error('DMCA page error:', error);
+    logger.error('DMCA page error:', error);
     res.render('error', {
       title: 'Error - KitaNime',
       error: { status: 500, message: 'Tidak dapat memuat halaman kebijakan DMCA' }
@@ -174,7 +175,7 @@ router.get('/help', async (req, res) => {
       currentPage: 'help'
     });
   } catch (error) {
-    console.error('Help page error:', error);
+    logger.error('Help page error:', error);
     res.render('error', {
       title: 'Error - KitaNime',
       error: { status: 500, message: 'Tidak dapat memuat halaman pusat bantuan' }
@@ -192,7 +193,7 @@ router.get('/about', async (req, res) => {
       currentPage: 'about'
     });
   } catch (error) {
-    console.error('About page error:', error);
+    logger.error('About page error:', error);
     res.render('error', {
       title: 'Error - KitaNime',
       error: { status: 500, message: 'Tidak dapat memuat halaman tentang kami' }
@@ -213,7 +214,7 @@ router.get('/contact', async (req, res) => {
       currentPage: 'contact'
     });
   } catch (error) {
-    console.error('Contact page error:', error);
+    logger.error('Contact page error:', error);
     res.render('error', {
       title: 'Error - KitaNime',
       error: { status: 500, message: 'Tidak dapat memuat halaman kontak' }
@@ -223,7 +224,7 @@ router.get('/contact', async (req, res) => {
 
 router.get('/stream', async (req, res) => {
   const startTime = Date.now();
-  console.log('Streaming request:', req.query.url);
+  logger.debug('Streaming request:', req.query.url);
 
   try {
     const googleVideoUrl = req.query.url;
@@ -258,7 +259,7 @@ router.get('/stream', async (req, res) => {
       const videoUrl = match[0].play_url;
       const host = new URL(videoUrl).hostname;
 
-      console.log(`Streaming from: ${host}`);
+      logger.debug(`Streaming from: ${host}`);
 
       // Enhanced headers for better compatibility
       const headers = {
@@ -303,7 +304,7 @@ router.get('/stream', async (req, res) => {
 
       // Handle stream errors with better error handling
       response.data.on('error', (err) => {
-        console.error('Stream error:', err);
+        logger.error('Stream error:', err);
         if (!res.headersSent) {
           res.status(500).json({ error: 'Stream error occurred' });
         }
@@ -311,14 +312,14 @@ router.get('/stream', async (req, res) => {
 
       // Handle client disconnect
       req.on('close', () => {
-        console.log('Client disconnected from stream');
+        logger.debug('Client disconnected from stream');
         response.data.destroy();
       });
 
       // Add performance monitoring
       response.data.on('end', () => {
         const duration = Date.now() - startTime;
-        console.log(`Stream completed in ${duration}ms`);
+        logger.debug(`Stream completed in ${duration}ms`);
       });
 
       // Pipe the stream with error handling
@@ -360,7 +361,7 @@ router.get('/stream', async (req, res) => {
       response.data.pipe(res);
     }
   } catch (error) {
-    console.error('Stream error:', error.message);
+    logger.error('Stream error:', error.message);
     if (!res.headersSent) {
       const statusCode = error.response?.status || 500;
       res.status(statusCode).json({
@@ -373,7 +374,7 @@ router.get('/stream', async (req, res) => {
 });
 
 router.get('/blog/:token', async (req, res) => {
-  console.log('streaming..')
+  logger.debug('streaming..');
   try {
     const { token } = req.params;
     const googleVideoUrl = `https://www.blogger.com/video.g?token=${token}`;
@@ -390,7 +391,7 @@ router.get('/blog/:token', async (req, res) => {
     if (token) {
       const match = await getSourceVideo(googleVideoUrl);
       const Referer = new URL(googleVideoUrl).host;
-      console.log(Referer)
+      logger.debug('Referer:', Referer);
       const host = new URL(match[0].play_url).hostname;
       const response = await axios.get(match[0].play_url, {
         responseType: 'stream',
@@ -416,7 +417,7 @@ router.get('/blog/:token', async (req, res) => {
       response.data.pipe(res);
     }
   } catch (error) {
-    console.error('Stream error:', error.message);
+    logger.error('Stream error:', error.message);
     res.status(500).json({
       error: 'Failed to stream video',
       message: process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message
@@ -456,7 +457,7 @@ router.get("/gdrive/:vid", async (req, res) => {
 
     response.data.pipe(res);
   } catch (err) {
-    console.error(err.message);
+    logger.error('Error:', err.message);
     res.status(500).send("Error streaming");
   }
 });
@@ -477,10 +478,10 @@ router.get('/ongoing', async (req, res) => {
 
     let ongoingData;
     if (cachedData) {
-      console.log(`Cache hit for ongoing page ${page}`);
+      logger.cacheHit(`ongoing-page-${page}`);
       ongoingData = cachedData;
     } else {
-      console.log(`Cache miss for ongoing page ${page}, fetching from API`);
+      logger.cacheMiss(`ongoing-page-${page}`);
       ongoingData = await animeApi.getOngoingAnime(page);
 
       // Cache the result for 10 minutes
@@ -497,7 +498,7 @@ router.get('/ongoing', async (req, res) => {
       currentPage: 'ongoing'
     });
   } catch (error) {
-    console.error('Ongoing page error:', error);
+    logger.error('Ongoing page error:', error);
     res.render('error', {
       title: 'Terjadi Kesalahan - KitaNime',
       error: {
@@ -520,7 +521,7 @@ router.get('/complete', async (req, res) => {
       currentPage: 'complete'
     });
   } catch (error) {
-    console.error('Complete page error:', error);
+    logger.error('Complete page error:', error);
     res.render('error', {
       title: 'Terjadi Kesalahan - KitaNime',
       error: {
@@ -551,7 +552,7 @@ router.get('/search', async (req, res) => {
       genres
     });
   } catch (error) {
-    console.error('Search page error:', error);
+    logger.error('Search page error:', error);
     res.render('error', {
       title: 'Terjadi Kesalahan - KitaNime',
       error: {
@@ -572,7 +573,7 @@ router.get('/genres', async (req, res) => {
       currentPage: 'genres'
     });
   } catch (error) {
-    console.error('Genres page error:', error);
+    logger.error('Genres page error:', error);
     res.render('error', {
       title: 'Terjadi Kesalahan - KitaNime',
       error: {
@@ -598,7 +599,7 @@ router.get('/genres/:slug', async (req, res) => {
       currentPage: 'genres'
     });
   } catch (error) {
-    console.error('Genre detail page error:', error);
+    logger.error('Genre detail page error:', error);
     res.render('error', {
       title: 'Terjadi Kesalahan - KitaNime',
       error: {
@@ -630,7 +631,7 @@ router.get('/movies/', async (req, res) => {
       currentPage: 'movies'
     });
   } catch (error) {
-    console.error('Movies page error:', error);
+    logger.error('Movies page error:', error);
     res.render('error', {
       title: 'Terjadi Kesalahan - KitaNime',
       error: {
@@ -662,7 +663,7 @@ router.get('/movies/:year/:month/:slug', async (req, res) => {
       currentPage: 'movies'
     });
   } catch (error) {
-    console.error('Movie detail page error:', error);
+    logger.error('Movie detail page error:', error);
     res.render('error', {
       title: 'Terjadi Kesalahan - KitaNime',
       error: {
@@ -878,7 +879,7 @@ router.get('/sitemap.xml', async (req, res) => {
     res.set('Content-Type', 'application/xml');
     res.send(sitemap);
   } catch (error) {
-    console.error('Sitemap generation error:', error);
+    logger.error('Sitemap generation error:', error);
     res.status(500).send('Error generating sitemap');
   }
 });

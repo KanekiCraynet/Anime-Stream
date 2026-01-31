@@ -368,11 +368,11 @@ async function initializeDatabase() {
       // Insert default data with error handling
       insertDefaultData()
         .then(() => {
-          console.log('Database initialization completed successfully');
+          logger.info('Database initialization completed successfully');
           resolve();
         })
         .catch(err => {
-          console.error('Error during database initialization:', err);
+          logger.error('Error during database initialization:', err);
           reject(err);
         });
     });
@@ -382,7 +382,7 @@ async function initializeDatabase() {
 // Ensure new columns exist on older databases - only run after database is ready
 const ensureColumnsExist = () => {
   if (!db || !dbReady) {
-    console.log('Database not ready, skipping column check');
+    logger.debug('Database not ready, skipping column check');
     return;
   }
 
@@ -394,7 +394,7 @@ const ensureColumnsExist = () => {
             const hasAvatar = rows.some(r => r.name === 'avatar_url');
             if (!hasAvatar) {
               db.run("ALTER TABLE users ADD COLUMN avatar_url TEXT", () => {
-                console.log('Added avatar_url column to users table');
+                logger.info('Added avatar_url column to users table');
               });
             }
           }
@@ -402,7 +402,7 @@ const ensureColumnsExist = () => {
       }
     });
   } catch (error) {
-    console.error('Error checking user table columns:', error);
+    logger.error('Error checking user table columns:', error);
   }
 };
 
@@ -437,7 +437,7 @@ async function insertDefaultData() {
     // Insert default API endpoint
     db.get("SELECT COUNT(*) as count FROM api_endpoints", (err, row) => {
       if (err) {
-        console.error('Error checking api_endpoints:', err);
+        logger.error('Error checking api_endpoints:', err);
         handleError(err);
         return;
       }
@@ -446,10 +446,10 @@ async function insertDefaultData() {
         db.run(`INSERT INTO api_endpoints (name, url, is_active) VALUES
           ('Default API', 'https://anime-stream-delta.vercel.app/v1', 1)`, (err) => {
           if (err) {
-            console.error('Error inserting default API endpoint:', err);
+            logger.error('Error inserting default API endpoint:', err);
             handleError(err);
           } else {
-            console.log('Default API endpoint inserted');
+            logger.info('Default API endpoint inserted');
             checkComplete();
           }
         });
@@ -461,7 +461,7 @@ async function insertDefaultData() {
     // Insert default admin user
     db.get("SELECT COUNT(*) as count FROM admin_users", async (err, row) => {
       if (err) {
-        console.error('Error checking admin_users:', err);
+        logger.error('Error checking admin_users:', err);
         handleError(err);
         return;
       }
@@ -472,15 +472,15 @@ async function insertDefaultData() {
           db.run(`INSERT INTO admin_users (username, password_hash, email) VALUES
             ('admin', ?, 'admin@kitanime.com')`, [hashedPassword], (err) => {
             if (err) {
-              console.error('Error inserting default admin user:', err);
+              logger.error('Error inserting default admin user:', err);
               handleError(err);
             } else {
-              console.log('Default admin user inserted');
+              logger.info('Default admin user inserted');
               checkComplete();
             }
           });
         } catch (error) {
-          console.error('Error hashing admin password:', error);
+          logger.error('Error hashing admin password:', error);
           handleError(error);
         }
       } else {
@@ -491,7 +491,7 @@ async function insertDefaultData() {
     // Insert default ad slots
     db.get("SELECT COUNT(*) as count FROM ad_slots", (err, row) => {
       if (err) {
-        console.error('Error checking ad_slots:', err);
+        logger.error('Error checking ad_slots:', err);
         handleError(err);
         return;
       }
@@ -502,10 +502,10 @@ async function insertDefaultData() {
           ('Sidebar Top', 'sidebar-top', 'adsense', '<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-xxxxxxxxxx" data-ad-slot="xxxxxxxxxx" data-ad-format="auto"></ins>', 1),
           ('Content Bottom', 'content-bottom', 'banner', '<img src="/images/ads/content-banner.jpg" alt="Advertisement" class="w-full h-32 object-cover rounded-lg">', 1)`, (err) => {
           if (err) {
-            console.error('Error inserting default ad slots:', err);
+            logger.error('Error inserting default ad slots:', err);
             handleError(err);
           } else {
-            console.log('Default ad slots inserted');
+            logger.info('Default ad slots inserted');
             checkComplete();
           }
         });
@@ -517,7 +517,7 @@ async function insertDefaultData() {
     // Insert default settings
     db.get("SELECT COUNT(*) as count FROM settings", (err, row) => {
       if (err) {
-        console.error('Error checking settings:', err);
+        logger.error('Error checking settings:', err);
         handleError(err);
         return;
       }
@@ -538,10 +538,10 @@ async function insertDefaultData() {
           ('about_us', 'Tentang KitaNime:\n\nKitaNime adalah platform streaming anime terlengkap dengan subtitle Indonesia. Kami berkomitmen menyediakan pengalaman menonton anime yang terbaik dengan kualitas HD dan update terbaru setiap hari.', 'Tentang website'),
           ('social_media', '{"facebook":"","twitter":"","instagram":"","youtube":"","discord":""}', 'Link media sosial (JSON format)')`, (err) => {
           if (err) {
-            console.error('Error inserting default settings:', err);
+            logger.error('Error inserting default settings:', err);
             handleError(err);
           } else {
-            console.log('Default settings inserted');
+            logger.info('Default settings inserted');
             checkComplete();
           }
         });
@@ -559,7 +559,7 @@ const dbHelpers = {
       const row = await executeQuerySingle("SELECT url FROM api_endpoints WHERE is_active = 1 LIMIT 1");
       return row ? row.url : null;
     } catch (error) {
-      console.error('Error getting active API endpoint:', error);
+      logger.error('Error getting active API endpoint:', error);
       return null;
     }
   },
@@ -568,7 +568,7 @@ const dbHelpers = {
     try {
       return await executeQuery("SELECT * FROM api_endpoints ORDER BY created_at DESC");
     } catch (error) {
-      console.error('Error getting all API endpoints:', error);
+      logger.error('Error getting all API endpoints:', error);
       return [];
     }
   },

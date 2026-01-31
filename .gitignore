@@ -91,7 +91,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# public - REMOVED: was ignoring our static assets folder
 
 # Storybook build outputs
 .out

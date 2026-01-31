@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const {load} = require('cheerio');
+const { load } = require('cheerio');
 const animeApi = require('../services/animeApi');
 const { getAnimeAverageRating, getAnimeRating, getComments, getWatchProgress, updateWatchHistory } = require('../models/database');
 
@@ -135,53 +135,80 @@ router.get('/:slug/episode/:episode', async (req, res) => {
     const currentEpisodeIndex = allEpisodes.findIndex(ep =>
       ep.episode_number == episodeNumber
     );
-    
+
     // Use episodeData directly instead of making another API call
-    console.log(episodeData.next_episode);
+    console.log('Episode data:', episodeData.next_episode);
     const modifiedStreamList = {};
     var qlist = [];
-    for (const quality in episodeData.steramList) {
-      qlist.push(parseInt(quality.replace('p', '')));
-      modifiedStreamList[parseInt(quality.replace('p', ''))] = `${episodeData.steramList[quality]}`;
+
+    // Safely access steramList with fallback
+    const streamList = episodeData.steramList || episodeData.streamList || {};
+
+    // Check if we have any valid direct stream URLs (not iframe URLs)
+    let hasDirectStream = false;
+
+    for (const quality in streamList) {
+      const url = streamList[quality];
+      // Check if URL is a direct video stream (not an iframe embed URL)
+      if (url && !url.includes('desustream.info') && !url.includes('index.php?id=')) {
+        hasDirectStream = true;
+        const qualityNum = parseInt(quality.replace('p', ''));
+        qlist.push(qualityNum);
+        modifiedStreamList[qualityNum] = url;
+      }
     }
-    if(Object.keys(episodeData.steramList).length == 0 || episodeData.steramList['720'] == null){
-      qlist.push('480');
-      modifiedStreamList['480'] = episodeData.stream_url;
+
+    // If no direct streams found, fallback to stream_url as embed
+    const streamUrl = episodeData.stream_url || '';
+    const isIframeUrl = streamUrl.includes('desustream.info') ||
+      streamUrl.includes('index.php?id=') ||
+      streamUrl.includes('embed');
+
+    // If stream_url exists and is not iframe, add as 480p fallback
+    if (streamUrl && !isIframeUrl) {
+      if (!modifiedStreamList['480']) {
+        qlist.push(480);
+        modifiedStreamList['480'] = streamUrl;
+        hasDirectStream = true;
+      }
     }
-    if(!modifiedStreamList['480']){
-      modifiedStreamList['480'] = episodeData.stream_url;
-    }
-    console.log(modifiedStreamList)
+
+    console.log('Modified stream list:', modifiedStreamList);
+    console.log('Has direct stream:', hasDirectStream);
+    console.log('Stream URL for embed:', streamUrl);
 
     // Get episode-specific comments and watch progress
     const [episodeComments, watchProgress] = await Promise.all([
       getComments(slug, parseInt(episodeNumber), 10, 0),
       req.session.userId ? getWatchProgress(req.session.userId, slug) : null
     ]);
-    
+
     var episodeDatas = {
-        title: `${sanitizedAnime.title} Episode ${episodeNumber} - KitaNime`,
-        description: `Nonton ${sanitizedAnime.title} Episode ${episodeNumber} subtitle Indonesia`,
-        anime: sanitizedAnime,
-        episode: {
-          number: episodeNumber,
-          title: episodeData.episode_title || `Episode ${episodeNumber}`,
-          video_sources: episodeData.stream_url || [],
-          qlist,
-          quality: modifiedStreamList || [],
-          subtitles: episodeData.stream_url || [],
-          download_links: episodeData.download_urls || []
-        },
-        navigation: {
-          isNext: episodeData.has_next_episode,
-          isPrev: episodeData.has_previous_episode,
-          prev: episodeData.previous_episode,
-          next: episodeData.next_episode,
-          all_episodes: sanitizedAnime.episodes
-        },
-        comments: episodeComments,
-        watchProgress,
-        currentPage: 'anime'
+      title: `${sanitizedAnime.title} Episode ${episodeNumber} - KitaNime`,
+      description: `Nonton ${sanitizedAnime.title} Episode ${episodeNumber} subtitle Indonesia`,
+      anime: sanitizedAnime,
+      episode: {
+        number: episodeNumber,
+        title: episodeData.episode_title || `Episode ${episodeNumber}`,
+        video_sources: hasDirectStream ? (episodeData.stream_url || []) : [],
+        qlist,
+        quality: modifiedStreamList,
+        hasDirectStream: hasDirectStream,
+        embed_url: streamUrl,  // Always provide embed URL as fallback
+        iframe_url: streamUrl, // Alternative name for iframe
+        subtitles: episodeData.stream_url || [],
+        download_links: episodeData.download_urls || []
+      },
+      navigation: {
+        isNext: episodeData.has_next_episode,
+        isPrev: episodeData.has_previous_episode,
+        prev: episodeData.previous_episode,
+        next: episodeData.next_episode,
+        all_episodes: sanitizedAnime.episodes
+      },
+      comments: episodeComments,
+      watchProgress,
+      currentPage: 'anime'
     }
     res.render('episode-player', episodeDatas);
   } catch (error) {

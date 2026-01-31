@@ -22,7 +22,8 @@ block content
               p(class="text-sm text-gray-300 mt-2") Mohon tunggu sebentar
 
           div(class="h-full")
-            if episode.quality
+            //- Check if we have direct stream URLs or need to use iframe
+            if episode.quality && Object.keys(episode.quality).length > 0 && episode.hasDirectStream
               video(id="player" class="aspect-video w-full h-full" preload="metadata" poster='/images/poster.png' crossorigin="anonymous" playsinline allow="autoplay" data-plyr-config='{"autoplay": false, "muted": true}')
                 if episode.video_sources
                   if Array.isArray(episode.video_sources)
@@ -32,6 +33,16 @@ block content
                     each source in episode.qlist
                       source(src=episode.quality[source] type="video/mp4" size=source)
                 p(class="text-white text-center p-4") Browser Anda tidak mendukung video player.
+            else
+              //- Use iframe embed for desustream or other embed players
+              iframe#iframePlayer(
+                class="aspect-video w-full h-full"
+                src=episode.embed_url || episode.iframe_url
+                frameborder="0"
+                allowfullscreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+              )
 
           div(class="absolute top-0 left-0 right-0 bg-gradient-to-t from-transparent via-black/50 to-black p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300")
             div(class="flex items-center justify-between text-white")
@@ -248,50 +259,9 @@ block scripts
     autonexteps.addEventListener('change', (e) => {
       localStorage.setItem('AutoPlayNextEpisode', e.target.checked);
     });
-    const source = !{JSON.stringify(episode.quality)}
-    const player = new Plyr('#player', {
-      autoplay: false,
-      muted: true,
-      controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
-      settings: ['quality', 'speed'],
-      quality: {
-        default: 360,
-        options: !{JSON.stringify(episode.qlist)},
-        forced: true,
-      },
-      speed: {
-        selected: 1,
-        options: [0.5, 0.75, 1, 1.25, 1.5, 2]
-      },
-      keyboard: {
-        focused: true,
-        global: true
-      },
-      tooltips: {
-        controls: true,
-        seek: true
-      },
-      captions: {
-        active: false,
-        language: 'auto',
-        update: false
-      },
-      fullscreen: {
-        enabled: true,
-        fallback: true,
-        iosNative: false
-      },
-      storage: {
-        enabled: true,
-        key: 'plyr'
-      },
-      seekTime: 10,
-      volume: 0.8,
-      clickToPlay: true,
-      disableContextMenu: false
-    });
-    const video = player.media;
-    const playerContainer = document.querySelector('#player');
+    
+    const hasDirectStream = !{JSON.stringify(episode.hasDirectStream || false)};
+    const source = !{JSON.stringify(episode.quality || {})};
     const loadingOverlay = document.getElementById('playerLoading');
     
     const anime = !{JSON.stringify(anime)};
@@ -300,13 +270,85 @@ block scripts
     const animeSlug = '#{anime.slug}';
     const nextEpisodeNumber = #{navigation.next || 'null'};
     
-    let canSeek = false;
-    let pendingSeekTime = null;
+    // Check if we're using iframe or video player
+    const iframePlayer = document.getElementById('iframePlayer');
+    const videoPlayer = document.getElementById('player');
     
-    player.on('loadstart', event => {
-      console.log('Video loading started');
-      loadingOverlay.style.opacity = '1';
-      loadingOverlay.style.pointerEvents = 'auto';
+    if (iframePlayer) {
+      // Using iframe embed mode
+      console.log('Using iframe embed mode');
+      
+      // Hide loading overlay when iframe loads
+      iframePlayer.addEventListener('load', () => {
+        console.log('Iframe loaded');
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => {
+          loadingOverlay.style.pointerEvents = 'none';
+        }, 300);
+      });
+      
+      // Set timeout fallback for loading overlay
+      setTimeout(() => {
+        loadingOverlay.style.opacity = '0';
+        loadingOverlay.style.pointerEvents = 'none';
+      }, 5000);
+      
+    } else if (videoPlayer && hasDirectStream) {
+      // Using native video player with Plyr
+      console.log('Using native video player');
+      
+      const player = new Plyr('#player', {
+        autoplay: false,
+        muted: true,
+        controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
+        settings: ['quality', 'speed'],
+        quality: {
+          default: 360,
+          options: !{JSON.stringify(episode.qlist || [])},
+          forced: true,
+        },
+        speed: {
+          selected: 1,
+          options: [0.5, 0.75, 1, 1.25, 1.5, 2]
+        },
+        keyboard: {
+          focused: true,
+          global: true
+        },
+        tooltips: {
+          controls: true,
+          seek: true
+        },
+        captions: {
+          active: false,
+          language: 'auto',
+          update: false
+        },
+        fullscreen: {
+          enabled: true,
+          fallback: true,
+          iosNative: false
+        },
+        storage: {
+          enabled: true,
+          key: 'plyr'
+        },
+        seekTime: 10,
+        volume: 0.8,
+        clickToPlay: true,
+        disableContextMenu: false
+      });
+      
+      const video = player.media;
+      const playerContainer = document.querySelector('#player');
+      
+      let canSeek = false;
+      let pendingSeekTime = null;
+      
+      player.on('loadstart', event => {
+        console.log('Video loading started');
+        loadingOverlay.style.opacity = '1';
+        loadingOverlay.style.pointerEvents = 'auto';
     });
 
     player.on('loadedmetadata', event => {
@@ -676,6 +718,7 @@ block scripts
         }, 2000);
       }
     });
+    } // End of Plyr player block
 
     // Episode Comments functionality
     (function(){

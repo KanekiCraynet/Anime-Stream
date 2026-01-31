@@ -19,7 +19,7 @@ class AnimeApiService {
     this.circuitBreakerState = 'CLOSED'; // CLOSED, OPEN, HALF_OPEN
     this.failureCount = 0;
     this.lastFailureTime = 0;
-    
+
     // Setup periodic cache cleanup to prevent memory leaks
     this.setupCacheCleanup();
   }
@@ -34,24 +34,24 @@ class AnimeApiService {
   cleanupCache() {
     const now = Date.now();
     const keysToDelete = [];
-    
+
     for (const [key, value] of this.cache.entries()) {
       if (now - value.timestamp > this.cacheTimeout) {
         keysToDelete.push(key);
       }
     }
-    
+
     keysToDelete.forEach(key => this.cache.delete(key));
-    
+
     // If cache is still too large, remove oldest entries
     if (this.cache.size > this.maxCacheSize) {
       const entries = Array.from(this.cache.entries());
       entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-      
+
       const toRemove = entries.slice(0, this.cache.size - this.maxCacheSize);
       toRemove.forEach(([key]) => this.cache.delete(key));
     }
-    
+
     if (keysToDelete.length > 0) {
       console.log(`Cleaned up ${keysToDelete.length} expired cache entries`);
     }
@@ -67,10 +67,10 @@ class AnimeApiService {
       // For production, try database first
       if (process.env.VERCEL === '1') {
         try {
-      const dbUrl = await getActiveApiEndpoint();
-      if (dbUrl && typeof dbUrl === 'string') {
-        return dbUrl.replace(/\/$/, '');
-      }
+          const dbUrl = await getActiveApiEndpoint();
+          if (dbUrl && typeof dbUrl === 'string') {
+            return dbUrl.replace(/\/$/, '');
+          }
         } catch (dbError) {
           console.log('Database not available, using environment fallback');
         }
@@ -89,14 +89,14 @@ class AnimeApiService {
       }
 
       // Production default
-      return process.env.VERCEL === '1' 
-        ? 'https://anime-stream-delta.vercel.app/v1'
-        : 'https://anime-stream-delta.vercel.app/v1';
+      return process.env.VERCEL === '1'
+        ? 'https://anime-stream-red.vercel.app/v1'
+        : 'https://anime-stream-red.vercel.app/v1';
     } catch (error) {
       console.error('Error getting API base URL:', error);
-      return process.env.VERCEL === '1' 
-        ? 'https://anime-stream-delta.vercel.app/v1'
-        : 'https://anime-stream-delta.vercel.app/v1';
+      return process.env.VERCEL === '1'
+        ? 'https://anime-stream-red.vercel.app/v1'
+        : 'https://anime-stream-red.vercel.app/v1';
     }
   }
 
@@ -208,12 +208,12 @@ class AnimeApiService {
       const baseUrl = await this.getApiBaseUrl();
       const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
       let url = `${baseUrl}${normalizedEndpoint}`;
-      if(endpoint == '/ongoing-anime'){
+      if (endpoint == '/ongoing-anime') {
         url = `${baseUrl}/ongoing-anime/${params.page}`;
       }
-      
+
       console.log(`Making API request to: ${url}`);
-      
+
       // Use retry mechanism with circuit breaker
       const result = await this.retryRequest(async () => {
         const response = await axios.get(url, {
@@ -236,7 +236,7 @@ class AnimeApiService {
 
         let data;
         if (response.data && response.data.status === 'Ok') {
-          if(endpoint === '/ongoing-anime' || endpoint.includes('/complete-anime') || endpoint.includes('/search') || endpoint.includes('/movies') || response.data.anime && response.data.pagination) {
+          if (endpoint === '/ongoing-anime' || endpoint.includes('/complete-anime') || endpoint.includes('/search') || endpoint.includes('/movies') || response.data.anime && response.data.pagination) {
             data = response.data;
           } else {
             data = response.data.data;
@@ -258,7 +258,7 @@ class AnimeApiService {
     } catch (error) {
       console.error(`API request failed for ${endpoint}:`, error.message);
       this.recordFailure();
-      
+
       // Always fallback to mock data on failure
       return await this.loadMockData(endpoint, params);
     }
@@ -267,7 +267,7 @@ class AnimeApiService {
   async loadMockData(endpoint, params = {}) {
     try {
       let filename;
-      
+
       switch (endpoint) {
         case '/home':
           filename = 'v1_home.json';
@@ -299,7 +299,7 @@ class AnimeApiService {
       const mockDataPath = path.join(this.apiResponsesPath, filename);
       const mockData = await fs.readFile(mockDataPath, 'utf8');
       const parsedData = JSON.parse(mockData);
-      
+
       console.log(`Using mock data from: ${filename}`);
       return parsedData.data || parsedData;
     } catch (error) {
@@ -325,12 +325,12 @@ class AnimeApiService {
       // If no cache, try API with shorter timeout for ongoing anime
       const originalTimeout = this.requestTimeout;
       this.requestTimeout = 5000; // 5 seconds for ongoing anime
-      
+
       const result = await this.makeRequest('/ongoing-anime', { page });
-      
+
       // Restore original timeout
       this.requestTimeout = originalTimeout;
-      
+
       return result;
     } catch (error) {
       console.log(`API failed for ongoing anime, using mock data: ${error.message}`);

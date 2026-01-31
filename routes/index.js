@@ -35,9 +35,9 @@ router.get('/', async (req, res) => {
   try {
     // Set aggressive cache headers for CDN edge caching
     res.set({
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600', // 5 min edge cache, 10 min stale
-      'Surrogate-Control': 'max-age=600',
-      'CDN-Cache-Control': 'max-age=300'
+      'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200, stale-if-error=86400', // 10 min edge, 20 min stale, 1 day error fallback
+      'Surrogate-Control': 'max-age=1200',
+      'CDN-Cache-Control': 'max-age=600'
     });
 
     // Use hardcoded settings for performance (avoid DB calls on critical path)

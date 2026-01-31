@@ -22,6 +22,16 @@
     "ENABLE_COMPRESSION": "true",
     "VERCEL_ANALYTICS_ID": "prj_anime-stream-red"
   },
+  "functions": {
+    "app.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    },
+    "api/index.js": {
+      "memory": 512,
+      "maxDuration": 10
+    }
+  },
   "builds": [
     {
       "src": "public/**",
@@ -97,6 +107,27 @@
     },
     {
       "src": "^/$",
+      "headers": {
+        "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200, stale-if-error=86400"
+      },
+      "dest": "/app.js"
+    },
+    {
+      "src": "^/ongoing$",
+      "headers": {
+        "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200"
+      },
+      "dest": "/app.js"
+    },
+    {
+      "src": "^/complete$",
+      "headers": {
+        "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200"
+      },
+      "dest": "/app.js"
+    },
+    {
+      "src": "^/anime/.*",
       "headers": {
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600"
       },
